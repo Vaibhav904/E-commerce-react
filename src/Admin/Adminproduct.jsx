@@ -57,7 +57,7 @@ export default function Adminproduct() {
               marginLeft: "5px",
             }}
           >
-            Delete
+           All Deleted
           </button>
     </div>
   ),
