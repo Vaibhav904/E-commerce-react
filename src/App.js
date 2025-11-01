@@ -25,13 +25,17 @@ import Order from "./Admin/Order";
 import Customer from "./Admin/Customer";
 import Settings from "./Admin/Settings";
 import Edit from "./Admin/Edit";
+import ProductAdd from "./Admin/ProductAdd";
+import AddCategory from "./Admin/AddCategory";
 
 function App() {
   return (
     <>
       <BrowserRouter>
         <Routes>
+            <Route path="/addCategory" element={<AddCategory/>} />
         <Route path="/testing" element={<Testing/>} />
+         <Route path="/productadd" element={<ProductAdd/>} />
          <Route path="/order" element={<Order/>} />
            <Route path="/edit" element={<Edit/>} />
          <Route path="/analytics" element={<Analytics/>} />

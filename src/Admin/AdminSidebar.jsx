@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   FaShoppingCart,
   FaHome,
@@ -10,12 +10,13 @@ import {
 } from "react-icons/fa";
 
 const AdminSidebar = () => {
-  const [activeItem, setActiveItem] = useState("dashboard");
+  const [activeItem, setActiveItem] = useState("");
+    const location = useLocation();
 
   const menuItems = [
     { id: "dashboard", icon: <FaHome />, label: "Dashboard",  path: "/dashboard" },
     { id: "products", icon: <FaShoppingBag />, label: "Products",  path: "/adminproducts" },
-    { id: "orders", icon: <FaShoppingCart />, label: "Orders",  path: "/order" },
+    { id: "orders", icon: <FaShoppingCart />, label: "Category",  path: "/order" },
     { id: "customers", icon: <FaUsers />, label: "Customers",  path: "/customer" },
     { id: "analytics", icon: <FaChartLine />, label: "Analytics",  path: "/analytics" },
     { id: "settings", icon: <FaCog />, label: "Settings", path: "/settings" },
@@ -30,7 +31,10 @@ const AdminSidebar = () => {
         <Link
           key={item.id}
            to={item.path}
-          className={`menu-item ${activeItem === item.id ? "active" : ""}`}
+          className={`menu-item
+             ${
+            location.pathname === item.path ? "active" : "" }`
+}
           onClick={() => setActiveItem(item.id)}
         >
           {item.icon}
