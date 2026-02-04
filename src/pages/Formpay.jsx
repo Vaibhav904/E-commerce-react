@@ -1,182 +1,281 @@
-import React from 'react';
+import { Autocomplete } from "@react-google-maps/api";
 
-export default function Formpay() {
+import { useState, useEffect,useRef } from "react";
+import axios from "axios";
+
+export default function Formpay({ setSelectedAddress }) {
+  const token = localStorage.getItem("token");
+
+  // FORM STATES
+  const [name, setName] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [country, setCountry] = useState("");
+
+  // UI STATES
+  const [autocomplete, setAutocomplete] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  // ADDRESS STATES
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddresslocal] = useState(null);
+  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+const [selectedAddressId, setSelectedAddressId] = useState(null);
+ 
+  const isDefaultSet = useRef(false);
+
+
+
+  useEffect(() => {
+    if (addresses?.length && !isDefaultSet.current) {
+      setSelectedAddress(addresses[0]);
+      isDefaultSet.current = true;
+    }
+  }, [addresses]);
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+  /* ================= FETCH ADDRESSES ================= */
+  const fetchShippingAddresses = async () => {
+    try {
+      const res = await axios.get(
+        "http://tech-shop.techsaga.live/api/shipping-addresses",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      setAddresses(res.data.data || []);
+
+      if (res.data.data?.length) {
+        setSelectedAddresslocal(res.data.data[0]); // auto select
+      }
+    } catch (err) {
+      console.error("Fetch address error", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchShippingAddresses();
+  }, []);
+
+  /* ================= GOOGLE AUTOCOMPLETE ================= */
+  const onPlaceChanged = () => {
+    if (!autocomplete) return;
+
+    const place = autocomplete.getPlace();
+
+    setAddress(place.formatted_address || "");
+
+    let city = "",
+      state = "",
+      country = "",
+      postal = "";
+
+    place.address_components?.forEach((c) => {
+      if (c.types.includes("locality")) city = c.long_name;
+      if (c.types.includes("administrative_area_level_1")) state = c.long_name;
+      if (c.types.includes("country")) country = c.long_name;
+      if (c.types.includes("postal_code")) postal = c.long_name;
+    });
+
+    setCity(city);
+    setState(state);
+    setCountry(country);
+    setPostalCode(postal);
+  };
+
+  /* ================= SAVE NEW ADDRESS ================= */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrors({});
+
+    try {
+      await axios.post(
+        "http://tech-shop.techsaga.live/api/store-shipping",
+        {
+          name,
+          postal_code: postalCode,
+          address,
+          city,
+          state,
+          country,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      await fetchShippingAddresses();
+
+      setShowNewAddressForm(false);
+      setName("");
+      setAddress("");
+      setCity("");
+      setState("");
+      setCountry("");
+      setPostalCode("");
+    } catch (err) {
+      if (err.response?.data?.errors) {
+        setErrors(err.response.data.errors);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= DELIVER BUTTON ================= */
+  const handleDeliverHere = () => {
+    if (!selectedAddress) {
+      alert("Please select an address");
+      return;
+    }
+
+    console.log("Deliver to:", selectedAddress);
+
+    // 👉 next step
+    // navigate("/payment");
+  };
+
   return (
     <div className="left-side">
-      <div className="checkout-header">
-        <h1 className="checkout-title">Checkout</h1>
-        <div className="steps">
-          <span className="step-active">Information</span>
-          <span>Shipping</span>
-          <span>Payment</span>
-        </div>
-      </div>
+      <h1 className="checkout-title">Checkout</h1>
 
-      <div className="express-checkout-text">Express checkout</div>
-      <div className="btn-group-express">
-        <button className="btn btn-shop">
-          <i className="fas fa-shopping-bag me-2"></i>Shop Pay
-        </button>
-        <button className="btn btn-gpay">
-        Google Pay
-        </button>
-      </div>
+      {/* ================= SAVED ADDRESSES ================= */}
+      <div className="card p-3 mt-4 mb-4">
+        <h5 className="mb-3">Select Shipping Address</h5>
 
-      <div className="divider-container">
-        <hr />
-        <div>Or continue with standard checkout</div>
-        <hr />
-      </div>
+  <div className="address-list">
+      {addresses.map((addr) => {
+        const isChecked = selectedAddress?.id === addr.id;
 
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h5 className="section-title">
-          <i className="fas fa-user-circle section-title-icon"></i>Contact Information
-        </h5>
-        <a href="#" className="link-login">Have an account? Log in</a>
-      </div>
-
-      <form>
-        <div className="mb-3">
-          <label htmlFor="emailInput" className="form-label">Email address</label>
-          <input type="email" className="form-control" id="emailInput" placeholder="Enter your email" required />
-          <div className="form-text">We'll send your order confirmation here</div>
-        </div>
-
-        <div className="form-check mb-4">
-          <input className="form-check-input" type="checkbox" id="newsletterCheck" defaultChecked />
-          <label className="form-check-label" htmlFor="newsletterCheck">
-            Email me with news and offers
-          </label>
-        </div>
-
-        {/* Delivery Information */}
-         <div className="mb-3">
-        <label htmlFor="countrySelect" className="form-label">Country/Region</label>
-        <select className="form-select" id="countrySelect" aria-label="Country/Region select">
-          <option value="br" selected>Brazil</option>
-          <option value="us">United States</option>
-          <option value="ca">Canada</option>
-          <option value="uk">United Kingdom</option>
-        </select>
-      </div>
-
-      <div className="row g-3 mb-3">
-        <div className="col-md-6">
-          <label htmlFor="firstName" className="form-label">First name</label>
-          <input
-            type="text"
-            className="form-control"
-            id="firstName"
-            placeholder="First name"
-            autoComplete="given-name"
-            required
-          />
-        </div>
-        <div className="col-md-6">
-          <label htmlFor="lastName" className="form-label">Last name</label>
-          <input
-            type="text"
-            className="form-control"
-            id="lastName"
-            placeholder="Last name"
-            autoComplete="family-name"
-            required
-          />
-        </div>
-      </div>
-
-      <div className="mb-3">
-        <label htmlFor="postalCode" className="form-label">Postal code</label>
-        <div className="input-group">
-          <input
-            type="text"
-            className="form-control"
-            id="postalCode"
-            placeholder="Postal code"
-            aria-label="Postal code"
-            required
-          />    
-          {/* <button className="btn btn-outline-secondary" type="button" title="Search Postal Code">
-            <i className="fas fa-search"></i>
-          </button> */}
-        </div>
-      </div>
-
-      <div className="mb-3">
-        <label htmlFor="address" className="form-label">Address</label>
-        <input
-          type="text"
-          className="form-control"
-          id="address"
-          placeholder="Street address"
-          autoComplete="street-address"
-          required
-        />
-      </div>
-
-      <div className="mb-3">
-        <label htmlFor="apartment" className="form-label">Apartment, suite, etc. (optional)</label>
-        <input
-          type="text"
-          className="form-control"
-          id="apartment"
-          placeholder="Apartment, suite, etc."
-        />
-      </div>
-
-      <div className="row g-3 mb-3">
-        <div className="col-md-6">
-          <label htmlFor="city" className="form-label">City</label>
-          <input
-            type="text"
-            className="form-control"
-            id="city"
-            placeholder="City"
-            autoComplete="address-level2"
-            required
-          />
-        </div>
-        <div className="col-md-6">
-          <label htmlFor="stateSelect" className="form-label">State</label>
-          <select className="form-select" id="stateSelect" aria-label="State select" required>
-            <option value="" disabled selected>Select state</option>
-            <option value="SP">São Paulo</option>
-            <option value="RJ">Rio de Janeiro</option>
-            <option value="MG">Minas Gerais</option>
-            <option value="ES">Espírito Santo</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <label htmlFor="phone" className="form-label">
-          Phone (optional)
-          <span
-            className="info-icon"
-            data-bs-toggle="tooltip"
-            data-bs-placement="top"
-            title="We might contact you regarding your order."
+        return (
+          <div
+            key={addr.id}
+            className={`address-card ${isChecked ? "active" : ""}`}
+          onClick={() => {
+  setSelectedAddresslocal(addr); // update local state for UI
+  setSelectedAddress(addr);      // update parent
+}}
           >
-            ?
-          </span>
-        </label>
-        <input
-          type="tel"
-          className="form-control"
-          id="phone"
-          placeholder="Phone number"
-          autoComplete="tel"
-        />
-        <div className="form-text">For delivery questions only</div>
-      </div>
-        {/* ...continue converting the rest of the form fields similarly... */}
+            <span className={`custom-radio ${isChecked ? "checked" : ""}`} />
 
-        <div className="d-grid">
-          <button type="submit" className="btn btn-shop btn-lg">
-            Continue to Shipping <i className="fas fa-arrow-right ms-2"></i>
+            <div className="address-info">
+              <strong>{addr.name}</strong>
+              <p>{addr.address}</p>
+              <p>
+                {addr.city}, {addr.state} {addr.postal_code}
+              </p>
+              <p>{addr.country}</p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+        {/* BUTTONS */}
+        <div className="d-flex gap-2 mt-3">
+          <button
+            className="btn btn-success"
+            onClick={handleDeliverHere}
+            disabled={!selectedAddress}
+          >
+            Deliver to this address
+          </button>
+
+          <button
+            className="btn btn-outline-primary"
+            onClick={() => setShowNewAddressForm(true)}
+          >
+            Add New Address
           </button>
         </div>
-      </form>
+      </div>
+
+      {/* ================= NEW ADDRESS FORM ================= */}
+      {showNewAddressForm && (
+        <form onSubmit={handleSubmit}>
+          <h5 className="mb-3">Add New Address</h5>
+
+          <div className="mb-3">
+            <label>Full Name</label>
+            <input
+              className="form-control"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label>Postal Code</label>
+            <input
+              className="form-control"
+              value={postalCode}
+              onChange={(e) => setPostalCode(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label>Address</label>
+            <Autocomplete
+              onLoad={(a) => setAutocomplete(a)}
+              onPlaceChanged={onPlaceChanged}
+            >
+              <input
+                className="form-control"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                required
+              />
+            </Autocomplete>
+          </div>
+
+          <div className="row">
+            <div className="col-md-6">
+              <label>City</label>
+              <input className="form-control" value={city} readOnly />
+            </div>
+            <div className="col-md-6">
+              <label>State</label>
+              <input className="form-control" value={state} readOnly />
+            </div>
+          </div>
+
+          <div className="mt-3">
+            <label>Country</label>
+            <input className="form-control" value={country} readOnly />
+          </div>
+
+          <button className="btn btn-shop w-100 mt-4" disabled={loading}>
+            {loading ? "Saving..." : "Save & Continue"}
+          </button>
+        </form>
+      )}
     </div>
   );
 }

@@ -1,186 +1,172 @@
-import React, { useState } from 'react';
-import { Form, Button, Container, Row, Col, Card, Alert } from 'react-bootstrap';
+import React, { useState } from "react";
+import {
+  Form,
+  Button,
+  Container,
+  Row,
+  Col,
+  Card,
+  Alert,
+} from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showAlert, setShowAlert] = useState(false);
+  const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const cartItems = useSelector((state) => state.cart.cart);
+
+  const [apiError, setApiError] = useState("");
+  const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  // ✅ Input change handler
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (email && password) {
-      setIsLoading(true);
-      console.log('Logging in with:', { email, password });
-      const storedEmails = JSON.parse(localStorage.getItem('emails')) || [];
 
-    // Step 2: Add new email to the array
-    storedEmails.push(email,password);
+    setApiError("");
+    setSuccessMessage("");
+    setIsLoading(true);
 
-    // Step 3: Save updated array back to localStorage
-    localStorage.setItem('emails', JSON.stringify(storedEmails));
+    try {
+      // 🔐 LOGIN API
+      const res = await axios.post(
+        "http://tech-shop.techsaga.live/api/v1/user-auth",
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
 
-    console.log('All Emails:', storedEmails);
-       
-      // Simulate API call
-      setTimeout(() => {
-        setIsLoading(false);
-        setShowAlert(false);
-      }, 1500);
-    } 
-    else {
-      setShowAlert(true);
+      if (res.data.status) {
+        setSuccessMessage("Login successful ✅");
+
+        const token = res.data?.data?.token;
+        const userData = res.data.data;
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("name", userData.name);
+
+        // 🛒 STEP 2: Redux cart → API cart sync
+        if (cartItems.length > 0) {
+          for (const item of cartItems) {
+            await axios.post(
+              "http://tech-shop.techsaga.live/api/cart/add",
+              {
+                product_id: item.product_id,
+                quantity: item.quantity,
+              },
+              {
+                headers: {
+                  Accept: "application/json",
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+          }
+        }
+
+        // 🚀 redirect
+        setTimeout(() => {
+          navigate("/");
+        }, 1500);
+      } else {
+        setApiError(res.data.message || "Invalid credentials");
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        setApiError("Invalid email or password ❌");
+      } else {
+        setApiError("Server error ❌");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  {
+    successMessage && <Alert variant="success">{successMessage}</Alert>;
+  }
+
+  {
+    apiError && <Alert variant="danger">{apiError}</Alert>;
+  }
+
   return (
-    <Container 
-      className="mt-5"
-      style={{
-        minHeight: '100vh',
-        padding: '2rem 0'
-      }}
-    >
+    <Container className="mt-5" style={{ minHeight: "100vh" }}>
       <Row className="justify-content-md-center">
         <Col md={6} lg={5}>
-          <Card 
-            className="shadow-lg border-0" 
-            style={{ 
-              borderRadius: '1rem',
-              overflow: 'hidden'
-            }}
-          >
-            <div 
-              style={{ 
-                height: '10px', 
-              }} 
-            />
-            
+          <Card className="shadow-lg border-0">
             <Card.Body className="p-5">
               <div className="text-center mb-4">
-                <h3 
-                  className="mb-2" 
-                  style={{ 
-                    color: '#333',
-                    fontWeight: '600'
-                  }}
-                >
-                  Welcome 
-                </h3>
-                <p style={{ color: '#6c757d' }}>Sign in to your account</p>
+                <h3>Welcome Back</h3>
+                <p>Sign in to your account</p>
               </div>
 
-              {showAlert && (
-                <Alert 
-                  variant="danger" 
-                  className="py-2"
-                  style={{ 
-                    borderRadius: '0.5rem',
-                    border: 'none',
-                    backgroundColor: 'rgba(220,53,69,0.1)',
-                    color: '#dc3545'
-                  }}
-                >
-                  Please enter both email and password.
-                </Alert>
-              )}
+              {apiError && <Alert variant="danger">{apiError}</Alert>}
 
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3" controlId="formEmail">
-                  <Form.Label style={{ color: '#495057', fontWeight: '500' }}>
-                    Email address
-                  </Form.Label>
+              <Form onSubmit={handleLogin}>
+                {/* EMAIL */}
+                <Form.Group className="mb-3">
+                  <Form.Label>Email</Form.Label>
                   <Form.Control
                     type="email"
-                    placeholder="Enter email"
-                    value={email}
-                   
-                    onChange={(e) => setEmail(e.target.value)}
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     required
-                    style={{
-                      borderRadius: '0.5rem',
-                      padding: '0.75rem 1rem',
-                      border: '1px solid #ced4da',
-                      backgroundColor: '#f8f9fa'
-                    }}
                   />
                 </Form.Group>
 
-                <Form.Group className="mb-4" controlId="formPassword">
-                  <Form.Label style={{ color: '#495057', fontWeight: '500' }}>
-                    Password
-                  </Form.Label>
+                {/* PASSWORD */}
+                <Form.Group className="mb-3">
+                  <Form.Label>Password</Form.Label>
                   <Form.Control
                     type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
                     required
-                    style={{
-                      borderRadius: '0.5rem',
-                      padding: '0.75rem 1rem',
-                      border: '1px solid #ced4da',
-                      backgroundColor: '#f8f9fa'
-                    }}
                   />
                 </Form.Group>
 
-                <Button 
-                  variant="primary" 
-                  type="submit" 
-                  className="w-100 py-2"
+                <div className="text-end mb-3">
+                  <Link to="/forgot-password">Forgot Password?</Link>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-100"
                   disabled={isLoading}
-                  style={{
-                    borderRadius: '0.5rem',
-                    border: 'none',
-                    background: 'black',
-                    fontWeight: '600',
-                    fontSize: '1rem',
-                    transition: 'all 0.3s'
-                  }}
-                  onMouseOver={(e) => {
-                    e.target.style.background = 'black';
-                    e.target.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.background = 'black';
-                    e.target.style.transform = 'translateY(0px)';
-                  }}
+                  style={{ background: "black", border: "none" }}
                 >
-                  {isLoading ? 'Signing in...' : 'Sign in'}
+                  {isLoading ? "Signing in..." : "Sign in"}
                 </Button>
               </Form>
 
-              <div className="text-center mt-4">
-                <a 
-                  href="#" 
-                  style={{ 
-                    color: '#667eea',
-                    textDecoration: 'none',
-                    fontSize: '0.9rem'
-                  }}
-                  onMouseOver={(e) => e.target.style.color = '#5a6fd8'}
-                  onMouseOut={(e) => e.target.style.color = '#667eea'}
-                >
-                  Forgot password?
-                </a>
-              </div>
-              
               <div className="text-center mt-3">
-                <p style={{ color: '#6c757d', fontSize: '0.9rem' }}>
-                  Don't have an account?{' '}
-                  <a 
-                    href="#" 
-                    style={{ 
-                      color: '#667eea',
-                      textDecoration: 'none',
-                      fontWeight: '500'
-                    }}
-                    onMouseOver={(e) => e.target.style.color = '#5a6fd8'}
-                    onMouseOut={(e) => e.target.style.color = '#667eea'}
-                  >
-                    Sign up
-                  </a>
+                <p>
+                  Don't have an account?{" "}
+                  <Link to="/sign-up">Create Account</Link>
                 </p>
               </div>
             </Card.Body>

@@ -1,269 +1,339 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
-import { Outlet } from "react-router-dom";
-
 
 export default function ProductAdd() {
+  const token = localStorage.getItem("token");
+
+  /* ================= BASIC STATES ================= */
+  const [name, setName] = useState("");
+  const [productStatus, setProductStatus] = useState("published");
+  const [isVariant, setIsVariant] = useState(1);
+  const [description, setDescription] = useState("");
+
+  /* ================= CATEGORY STATES ================= */
+  const [categories, setCategories] = useState([]);
+  const [parentCategory, setParentCategory] = useState("");
+  const [childCategory, setChildCategory] = useState("");
+
+  console.log('parentCategory', parentCategory);
+  console.log('childCategory', childCategory);
+
+  /* ================= VARIANT STATES ================= */
+  const [sku, setSku] = useState("");
+  const [basePrice, setBasePrice] = useState("");
+  const [discount, setDiscount] = useState("");
+  const [stock, setStock] = useState("");
+  const [weight, setWeight] = useState("");
+  const [dimensions, setDimensions] = useState("");
+
+  /* ================= ATTRIBUTES ================= */
+  const [sizeValues, setSizeValues] = useState([{ label: "", value: "" }]);
+  const [colorValues, setColorValues] = useState([{ label: "", value: "" }]);
+
+  /* ================= IMAGES ================= */
+  const [variantImages, setVariantImages] = useState([]);
+
+  /* ================= CATEGORY API ================= */
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    axios
+      .get("http://tech-shop.techsaga.live/api/v1/category/categoryListing", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => setCategories(res.data.data))
+      .catch((err) => console.error(err));
+  }, []);
+
+  const parentCategories = categories.filter((c) => c.parent === 0);
+  const childCategories = categories.filter((c) => c.parent == parentCategory);
+
+  /* ================= ATTR HANDLERS ================= */
+  const addRow = (setter, state) =>
+    setter([...state, { label: "", value: "" }]);
+
+  const removeRow = (setter, state, index) =>
+    setter(state.filter((_, i) => i !== index));
+
+  const handleAttrChange = (setter, state, index, field, value) => {
+    const updated = [...state];
+    updated[index][field] = value;
+    setter(updated);
+  };
+
+  /* ================= SUBMIT ATTRIBUTES ================= */
+  const submitAttributes = async () => {
+    try {
+      if (sizeValues.some((v) => v.label && v.value)) {
+        const fd = new FormData();
+        fd.append("name", "size");
+        sizeValues.forEach((v) => {
+          if (v.label && v.value) {
+            fd.append("attribute_value[]", v.label);
+            fd.append("values[]", v.value);
+          }
+        });
+        await axios.post(
+          "http://tech-shop.techsaga.live/api/v1/attribute/add",
+          fd,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+
+      if (colorValues.some((v) => v.label && v.value)) {
+        const fd = new FormData();
+        fd.append("name", "color");
+        colorValues.forEach((v) => {
+          if (v.label && v.value) {
+            fd.append("attribute_value[]", v.label);
+            fd.append("values[]", v.value);
+          }
+        });
+        await axios.post(
+          "http://tech-shop.techsaga.live/api/v1/attribute/add",
+          fd,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  /* ================= SUBMIT PRODUCT ================= */
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const finalCategoryId = childCategory || parentCategory;
+
+  if (!finalCategoryId) {
+    alert("Please select category or sub category");
+    return;
+  }
+
+  if (!sku || !basePrice || !stock) {
+    alert("SKU, Base Price & Stock are required");
+    return;
+  }
+
+  if (variantImages.length === 0) {
+    alert("Please upload at least one product image");
+    return;
+  }
+
+  const formData = new FormData();
+
+  formData.append("name", name);
+  formData.append("category_id", Number(parentCategory));
+  formData.append("subcategory_id", Number(childCategory));
+  formData.append("product_status", productStatus);
+  formData.append("is_variant", isVariant);
+  formData.append("description", description);
+
+  formData.append("variants[0][sku]", sku);
+  formData.append("variants[0][base_price]", basePrice);
+  formData.append("variants[0][discount]", discount);
+  formData.append("variants[0][stock]", stock);
+  formData.append("variants[0][weight]", weight);
+  formData.append("variants[0][dimensions]", dimensions);
+
+  variantImages.forEach((file) =>
+    formData.append("variant_images[0][]", file)
+  );
+
+
+  // console.log('formData', formData);
+  try {
+    await axios.post(
+      "http://tech-shop.techsaga.live/api/v1/products/store",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    alert("Product Added Successfully ✅");
+  } catch (err) {
+    console.log(err.response.data);
+    alert("Product Add Failed ❌");
+  }
+};
+
+
   return (
-     <div className="d-flex">
-         
-
-     <AdminSidebar/>
-      <div  className="dash-header">
-        <AdminHeader/>
-        <Outlet/>
+    <div className="d-flex">
+      <AdminSidebar />
+      <div className="dash-header w-100">
+        <AdminHeader />
         <h2 className="dashboard-title">Add Product</h2>
-              <div className="container-fluid edit-cards">
-      <div className="row gy-4">
-        {/* Left Section */}
-        <div className="col-md-8">
-          {/* Product Info */}
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">Add Product</h5>
-            </div>
-            <div className="card-body">
-              <div className="mb-3">
-                <label htmlFor="productName" className="form-label">
-                  Product Name
-                </label>
+
+        <div className="container mt-4">
+          <form onSubmit={handleSubmit} className="p-4 bg-white shadow rounded">
+            {/* BASIC */}
+           <label className="form-label">Product Name</label>
+<input
+  className="form-control mb-3"
+  placeholder="Product Name"
+  onChange={(e) => setName(e.target.value)}
+/>
+
+{/* CATEGORY */}
+<label className="form-label">Parent Category</label>
+<select
+  className="form-control mb-3"
+  value={parentCategory}
+  onChange={(e) => {
+    setParentCategory(e.target.value);
+    setChildCategory("");
+  }}
+>
+  <option value="">Select Parent Category</option>
+  {parentCategories.map((c) => (
+    <option key={c.id} value={c.id}>
+      {c.category_name}
+    </option>
+  ))}
+</select>
+
+<label className="form-label">Child Category</label>
+<select
+  className="form-control mb-3"
+  value={childCategory}
+  onChange={(e) => setChildCategory(e.target.value)}
+  disabled={!parentCategory}
+>
+  <option value="">Select Child Category</option>
+  {childCategories.map((c) => (
+    <option key={c.id} value={c.id}>
+      {c.category_name}
+    </option>
+  ))}
+</select>
+
+<label className="form-label">Description</label>
+<textarea
+  className="form-control mb-3"
+  placeholder="Description"
+  onChange={(e) => setDescription(e.target.value)}
+/>
+
+{/* VARIANT */}
+<label className="form-label">SKU</label>
+<input className="form-control mb-2" placeholder="SKU" onChange={(e) => setSku(e.target.value)} />
+
+<label className="form-label">Base Price</label>
+<input className="form-control mb-2" placeholder="Base Price" onChange={(e) => setBasePrice(e.target.value)} />
+
+<label className="form-label">Discount</label>
+<input className="form-control mb-2" placeholder="Discount" onChange={(e) => setDiscount(e.target.value)} />
+
+<label className="form-label">Stock</label>
+<input className="form-control mb-2" placeholder="Stock" onChange={(e) => setStock(e.target.value)} />
+
+<label className="form-label">Variant Images</label>
+<input
+  type="file"
+  multiple
+  className="form-control mb-3"
+  onChange={(e) => setVariantImages([...e.target.files])}
+/>
+            {/* SIZE */}
+            <h5>Size</h5>
+            {sizeValues.map((i, idx) => (
+              <div className="d-flex gap-2 mb-2" key={idx}>
                 <input
-                  type="text"
                   className="form-control"
-                  id="productName"
-                  defaultValue="Wireless Bluetooth Headphones"
+                  placeholder="XL"
+                  value={i.label}
+                  onChange={(e) =>
+                    handleAttrChange(
+                      setSizeValues,
+                      sizeValues,
+                      idx,
+                      "label",
+                      e.target.value
+                    )
+                  }
                 />
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="productDescription" className="form-label">
-                  Description
-                </label>
-                <textarea
-                  className="form-control"
-                  id="productDescription"
-                  rows="4"
-                  defaultValue="High-quality wireless headphones with noise cancellation and 20-hour battery life. Perfect for music lovers and professionals."
-                />
-              </div>
-
-              <div className="row gy-4">
-                <div className="col-md-6">
-                  <div className="mb-3">
-                    <label htmlFor="productSKU" className="form-label">
-                      SKU
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="productSKU"
-                      defaultValue="WH-2023-BLK"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="mb-3">
-                    <label htmlFor="productCategory" className="form-label">
-                      Category
-                    </label>
-                    <select
-                      className="form-select"
-                      id="productCategory"
-                      defaultValue="Electronics"
-                    >
-                      <option>Electronics</option>
-                      <option>Audio</option>
-                      <option>Accessories</option>
-                      <option>Computers</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-md-4">
-                  <div className="mb-3">
-                    <label htmlFor="productPrice" className="form-label">
-                      Price ($)
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="productPrice"
-                      defaultValue="129.99"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="mb-3">
-                    <label htmlFor="productStock" className="form-label">
-                      Stock
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="productStock"
-                      defaultValue="45"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="mb-3">
-                    <label htmlFor="productStatus" className="form-label">
-                      Status
-                    </label>
-                    <select
-                      className="form-select"
-                      id="productStatus"
-                      defaultValue="Published"
-                    >
-                      <option>Published</option>
-                      <option>Draft</option>
-                      <option>Out of Stock</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Inventory */}
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">Inventory</h5>
-            </div>
-            <div className="card-body">
-              <div className="row">
-                <div className="col-md-6">
-                  <div className="mb-3">
-                    <label htmlFor="weight" className="form-label">
-                      Weight (kg)
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="weight"
-                      defaultValue="0.45"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="mb-3">
-                    <label htmlFor="dimensions" className="form-label">
-                      Dimensions (cm)
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="dimensions"
-                      defaultValue="18 x 15 x 6"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="form-check form-switch mb-3">
                 <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="trackInventory"
-                  defaultChecked
-                />
-                <label className="form-check-label" htmlFor="trackInventory">
-                  Track inventory
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Section */}
-        <div className="col-md-4">
-          {/* Product Image */}
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">Product Image</h5>
-            </div>
-            <div className="card-body">
-              <div className="image-upload mb-3">
-                <i className="bi bi-cloud-arrow-up fs-1 text-muted"></i>
-                <p>Click to upload or drag and drop</p>
-                <p className="text-muted small">
-                  SVG, PNG, JPG or GIF (max. 800x400px)
-                </p>
-              </div>
-              <div className="border rounded p-2 text-center">
-                <img
-                  src="https://via.placeholder.com/250"
-                  className="img-fluid rounded"
-                  alt="Product"
-                />
-                <div className="d-flex justify-content-center mt-2">
-                  <button className="btn btn-sm btn-outline-danger me-2">
-                    Remove
-                  </button>
-                  <button className="btn btn-sm btn-outline-primary">
-                    Replace
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Organization */}
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">Organization</h5>
-            </div>
-            <div className="card-body">
-              <div className="mb-3">
-                <label htmlFor="vendor" className="form-label">
-                  Vendor
-                </label>
-                <input
-                  type="text"
                   className="form-control"
-                  id="vendor"
-                  defaultValue="AudioTech Inc."
+                  placeholder="xl"
+                  value={i.value}
+                  onChange={(e) =>
+                    handleAttrChange(
+                      setSizeValues,
+                      sizeValues,
+                      idx,
+                      "value",
+                      e.target.value
+                    )
+                  }
                 />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="collections" className="form-label">
-                  Collections
-                </label>
-                <select
-                  className="form-select"
-                  id="collections"
-                  multiple
-                  defaultValue={["Audio", "Wireless"]}
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={() => addRow(setSizeValues, sizeValues)}
                 >
-                  <option>Audio</option>
-                  <option>Wireless</option>
-                  <option>New Arrivals</option>
-                  <option>On Sale</option>
-                </select>
+                  +
+                </button>
               </div>
-              <div className="mb-3">
-                <label htmlFor="tags" className="form-label">
-                  Tags
-                </label>
+            ))}
+
+            {/* COLOR */}
+            <h5>Color</h5>
+            {colorValues.map((i, idx) => (
+              <div className="d-flex gap-2 mb-2" key={idx}>
                 <input
-                  type="text"
                   className="form-control"
-                  id="tags"
-                  defaultValue="bluetooth, wireless, headphones, audio"
+                  placeholder="Red"
+                  value={i.label}
+                  onChange={(e) =>
+                    handleAttrChange(
+                      setColorValues,
+                      colorValues,
+                      idx,
+                      "label",
+                      e.target.value
+                    )
+                  }
                 />
-                <div className="form-text">Separate tags with commas</div>
+                <input
+                  className="form-control"
+                  placeholder="red"
+                  value={i.value}
+                  onChange={(e) =>
+                    handleAttrChange(
+                      setColorValues,
+                      colorValues,
+                      idx,
+                      "value",
+                      e.target.value
+                    )
+                  }
+                />
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={() => addRow(setColorValues, colorValues)}
+                >
+                  +
+                </button>
               </div>
-            </div>
-          </div>
+            ))}
+
+            <button className="btn btn-primary mt-4 px-5" type="submit">
+              Save Product
+            </button>
+          </form>
         </div>
-      </div>
-    </div>
-
-
       </div>
     </div>
   );
 }
-

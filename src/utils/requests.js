@@ -1,13 +1,11 @@
+import axios from "axios";
 import api from "./api";
 
-export const getProductById = async (id) => {
-  try {
-    const res = await api.get(`/products/${id}`);
-    return res.data;
-  } catch (err) {
-    console.error("Error fetching product:", err.message);
-    throw err;
-  }
+export const getProductById = async (slug) => {
+  const res = await axios.get(
+    `http://tech-shop.techsaga.live/api/product-details/${slug}`
+  );
+  return res.data;
 };
 export const getProducts = async (id) => {
   try {

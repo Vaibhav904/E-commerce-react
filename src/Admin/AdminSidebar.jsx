@@ -8,6 +8,7 @@ import {
   FaChartLine,
   FaCog,
 } from "react-icons/fa";
+import { CiCircleList } from "react-icons/ci";
 
 const AdminSidebar = () => {
   const [activeItem, setActiveItem] = useState("");
@@ -17,7 +18,10 @@ const AdminSidebar = () => {
     { id: "dashboard", icon: <FaHome />, label: "Dashboard",  path: "/dashboard" },
     { id: "products", icon: <FaShoppingBag />, label: "Products",  path: "/adminproducts" },
     { id: "orders", icon: <FaShoppingCart />, label: "Category",  path: "/order" },
+   { id: "Subcategory", icon: <FaShoppingCart />, label: "Banner Update",  path: "/bannerlisting" },
     { id: "customers", icon: <FaUsers />, label: "Customers",  path: "/customer" },
+     { id: "Specialproduct", icon: <FaUsers />, label: "Special Product",  path: "/Specialproduct" },
+      { id: "orderlisting", icon: <CiCircleList />, label: "Order Listing",  path: "/customer-orderlisting" },
     { id: "analytics", icon: <FaChartLine />, label: "Analytics",  path: "/analytics" },
     { id: "settings", icon: <FaCog />, label: "Settings", path: "/settings" },
   ];

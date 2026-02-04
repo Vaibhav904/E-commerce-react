@@ -1,63 +1,192 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import DataTable from "react-data-table-component";
-import { Link } from "react-router-dom";
+import axios from "axios";
 
-
-export default function Adminproduct() { 
-  const [data, setData] = useState([]); 
+export default function Adminproduct() {
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-    const handleDelete = (id) => {
-    // filter se row remove karenge
-    setData(data.filter((item) => item.id !== id));
-  };
-    const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("https://dummyjson.com/products");
-      if (!response.ok) {
-        throw new Error("Failed to fetch products");
+   const token = localStorage.getItem("token");
+   
+
+
+// FETCH PRODUCTS FROM API
+const fetchProducts = async () => {
+  try {
+    setLoading(true);
+
+    const res = await fetch(
+      `${process.env.REACT_APP_TECHSHOP_API_BASE_URL}/products`,
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       }
-      const result = await response.json();
-      setData(result.products); // API ke products ko state me daalna
-    } catch (err) {
-      console.error("Error fetching products:", err);
-    } finally {
-      setLoading(false);
+    );
+
+    if (!res.ok) {
+      console.log("API ERROR:", res.status);
+      throw new Error(`API Failed: ${res.status}`);
+    }
+
+    const result = await res.json();
+    console.log("API RESULT:", result);
+
+    if (result.status && Array.isArray(result.data)) {
+      setData(result.data);
+    }
+
+  } catch (error) {
+    console.error("Error fetching products:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  fetchProducts();
+}, []);
+
+
+
+    const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this category?"))
+      return;
+
+    try {
+      await axios.post(
+        "http://tech-shop.techsaga.live/api/v1/products/destroyproduct",
+        { product_id: id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      ); 
+
+      alert("Category deleted successfully!");
+      setData((prev) => prev.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Delete API Error:", error);
+      alert("Delete failed! Something went wrong.");
     }
   };
 
- 
-    useEffect(() => {
-    fetchProducts();
-  }, []);
 
-   const columns = [
+  const handleStatusChange = async (id, currentStatus) => {
+  // published ↔ draft
+  const newStatus =
+    currentStatus === "published" ? "draft" : "published";
+
+  try {
+    await axios.post(
+      "http://tech-shop.techsaga.live/api/v1/products/changeStatus",
+      {
+        product_id: id,
+        product_status: newStatus,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // UI update
+    setData((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, product_status: newStatus }
+          : item
+      )
+    );
+  } catch (error) {
+    console.error(error.response?.data || error);
+    alert("Failed to update product status!");
+  }
+};
+
+
+  // TABLE COLUMNS
+  const columns = [
     { name: "ID", selector: (row) => row.id, sortable: true },
+
     {
-      name: "Thumbnail",
-      cell: (row) => (
-        <img
-          src={row.thumbnail}
-          alt={row.title}
-          width="50"
-          height="50"
-          style={{ borderRadius: "8px", objectFit: "cover" }}
-        />
-      ),
+      name: "Image",
+      cell: (row) =>
+        row.variants?.length > 0 && row.variants[0].images?.length > 0 ? (
+          <img
+            src={row.variants[0].images[0]}
+            alt={row.name}
+            width="60"
+            height="60"
+            style={{ borderRadius: "8px", objectFit: "cover" }}
+          />
+        ) : (
+          <span>No Image</span>
+        ),
     },
-    { name: "Product Name", selector: (row) => row.title, sortable: true },
+
+    { name: "Name", selector: (row) => row.name, sortable: true },
     { name: "Description", selector: (row) => row.description },
-    { name: "Price", selector: (row) => `$${row.price}` },
-    { name: "Discount", selector: (row) => `${row.discountPercentage}%` },
+
+    {
+      name: "Category",
+      selector: (row) =>
+        `${row.category?.main?.name || "N/A"} → ${row.category?.sub?.name || "N/A"}`,
+    },
+
+    {
+      name: "Price",
+      selector: (row) =>
+        row.variants?.length > 0 ? `₹${row.variants[0].price}` : "N/A",
+    },
+
+    {
+      name: "Discount",
+      selector: (row) =>
+        row.variants?.length > 0 ? `${row.variants[0].discount}%` : "N/A",
+    },
+        // ⭐ STATUS BUTTON with TOGGLE
+  {
+  name: "STATUS",
+  cell: (row) => {
+    const ispublished = row.product_status === "published";
+
+    return (
+      <button
+        onClick={() =>
+          handleStatusChange(row.id, row.product_status)
+        }
+        style={{
+          padding: "5px 10px",
+          borderRadius: "4px",
+          border: "none",
+          cursor: "pointer",
+          backgroundColor: ispublished ? "green" : "red",
+          color: "#fff",
+          fontWeight: "bold",
+        }}
+      >
+        {ispublished ? "Published" : "Drfat"}
+      </button>
+    );
+  },
+},
+
+
     {
       name: "Actions",
       cell: (row) => (
         <div style={{ display: "flex", gap: "8px" }}>
-          <Link
-            to={`/edit/${row.id}`}
+           <Link
+            to={`/productedit/${row.id}`}
             style={{
               padding: "4px 8px",
               backgroundColor: "#4caf50",
@@ -68,6 +197,7 @@ export default function Adminproduct() {
           >
             Edit
           </Link>
+
           <button
             onClick={() => handleDelete(row.id)}
             style={{
@@ -86,36 +216,30 @@ export default function Adminproduct() {
     },
   ];
 
-  // ✅ Dummy Data
-  // const    [data, setData] = useState( [
-  //   { id: 1, thumbnail:"https://cdn.dummyjson.com/product-images/beauty/essence-mascara-lash-princess/1.webp", name: "Summer Coat", email: "Essence Mascara Lash Princess", role: "299" },
-  //   { id: 2, thumbnail:"https://cdn.dummyjson.com/product-images/beauty/powder-canister/1.webp", name: "New Pant", email: "Eyeshadow Palette with Mirror", role: "400" },
-  //   { id: 3, thumbnail:"https://cdn.dummyjson.com/product-images/beauty/eyeshadow-palette-with-mirror/1.webp", name: "Mens Caps", email: "priya@example.com", role: "290" },
-  //    { id: 4, thumbnail:"https://cdn.dummyjson.com/product-images/beauty/red-lipstick/1.webp", name: "T-shirt", email: "priya@example.com", role: "783" },
-  //     { id: 5, thumbnail:"https://cdn.dummyjson.com/product-images/fragrances/chanel-coco-noir-eau-de/1.webp", name: "shirt", email: "priya@example.com", role: "657" },
-  //      { id: 6, thumbnail:"https://cdn.dummyjson.com/product-images/fragrances/dior-j'adore/1.webp", name: "Shorts", email: "priya@example.com", role: "690" },
-  // ]);
   return (
     <div className="d-flex">
-     <AdminSidebar/>
-      <div  className="dash-header">
-        <AdminHeader/>
-        <Outlet/>
+      <AdminSidebar />
+      <div className="dash-header">
+        <AdminHeader />
+        <Outlet />
+
         <h2 className="dashboard-title">Product Overview</h2>
+
         <div className="container">
           <div className="add-product">
-            <Link   to={`/productadd`}>Add Product</Link>
+            <Link to={`/productadd`}>Add Product</Link>
           </div>
-                <DataTable
-      columns={columns}
-      data={data}
-      progressPending={loading}
-      pagination
-      highlightOnHover
-      striped
-      responsive
-    />
-         </div>
+
+          <DataTable
+            columns={columns}
+            data={data}
+            progressPending={loading}
+            pagination
+            highlightOnHover
+            striped
+            responsive
+          />
+        </div>
       </div>
     </div>
   );

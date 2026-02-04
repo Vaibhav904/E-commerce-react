@@ -22,7 +22,6 @@ export const { setAllProducts, setFilteredProducts } = filterSlice.actions;
 export default filterSlice.reducer;
 
 // import { createSlice } from "@reduxjs/toolkit";
-
 // const FilterSlice = createSlice({
 //   name: "Filters",
 //   initialState: {

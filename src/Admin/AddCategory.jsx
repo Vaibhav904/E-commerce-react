@@ -1,264 +1,251 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
 import { Outlet } from "react-router-dom";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+import axios from "axios";
 
 export default function AddCategory() {
+  const [mode, setMode] = useState("main"); // main OR sub
+  const [categories, setCategories] = useState([]);
+
+  const [formData, setFormData] = useState({
+    category_name: "",
+    category_id: "",
+    file: null, // Image for both main & sub
+  });
+
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  // Fetch Category list for Subcategory dropdown
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await axios.get(
+          "http://tech-shop.techsaga.live/api/v1/category/categoryListing",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setCategories(res.data.data);
+      } catch (err) {
+        console.log("Error Fetching Categories", err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setErrors({});
+    setFormData({ ...formData, file });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // ------------------------
+    // VALIDATION
+    // ------------------------
+    if (!formData.category_name) {
+      setErrors({ category_name: "Category name is required" });
+      return;
+    }
+    if (!formData.file) {
+      setErrors({ file: "Image is required" });
+      return;
+    }
+    if (mode === "sub" && !formData.category_id) {
+      setErrors({ category_id: "Please select a parent Category" });
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    try {
+      setLoading(true);
+
+      const form = new FormData();
+      form.append("category_name", formData.category_name);
+      form.append("category_img", formData.file);
+      form.append(
+        "parent",
+        mode === "main" ? 0 : formData.category_id // 0 for main, parent id for sub
+      );
+
+      await axios.post(
+        "http://tech-shop.techsaga.live/api/v1/category/storeCategory",
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      alert(
+        mode === "main"
+          ? "Main Category added successfully"
+          : "Subcategory added successfully"
+      );
+
+      // RESET
+      setFormData({
+        category_name: "",
+        category_id: "",
+        file: null,
+      });
+      setErrors({});
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      alert(error?.response?.data?.message || "Something went wrong!");
+    }
+  };
+
   return (
-     <div className="d-flex">
-         
+    <div className="d-flex">
+      <AdminSidebar />
 
-     <AdminSidebar/>
-      <div  className="dash-header">
-        <AdminHeader/>
-        <Outlet/>
-        <h2 className="dashboard-title">Add Category</h2>
-          <div className="container-fluid edit-cards">
-      <div className="row gy-4">
-        {/* Left Section */}
-        <div className="col-md-8">
-          {/* Product Info */}
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">Product Information</h5>
-            </div>
-            <div className="card-body">
-              <div className="mb-3">
-                <label htmlFor="productName" className="form-label">
-                  Product Name
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="productName"
-                  defaultValue="Wireless Bluetooth Headphones"
-                />
-              </div>
+      <div className="dash-header">
+        <AdminHeader />
+        <Outlet />
+        <h2 className="dashboard-title">Add Category / Subcategory</h2>
 
-              <div className="mb-3">
-                <label htmlFor="productDescription" className="form-label">
-                  Description
-                </label>
-                <textarea
-                  className="form-control"
-                  id="productDescription"
-                  rows="4"
-                  defaultValue="High-quality wireless headphones with noise cancellation and 20-hour battery life. Perfect for music lovers and professionals."
-                />
-              </div>
-
-              <div className="row gy-4">
-                <div className="col-md-6">
-                  <div className="mb-3">
-                    <label htmlFor="productSKU" className="form-label">
-                      SKU
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="productSKU"
-                      defaultValue="WH-2023-BLK"
-                    />
-                  </div>
+        <div className="container-fluid edit-cards">
+          <div className="row gy-4">
+            <div className="col-md-8">
+              <div className="card">
+                <div className="card-header">
+                  <h5 className="card-title mb-0">
+                    Select Mode & Fill Information
+                  </h5>
                 </div>
-                <div className="col-md-6">
-                  <div className="mb-3">
-                    <label htmlFor="productCategory" className="form-label">
-                      Category
-                    </label>
-                    <select
-                      className="form-select"
-                      id="productCategory"
-                      defaultValue="Electronics"
+
+                <div className="card-body">
+                  {/* MODE SELECT */}
+                  <Form.Select
+                    className="mb-3"
+                    value={mode}
+                    onChange={(e) => setMode(e.target.value)}
+                  >
+                    <option value="main">Add MAIN Category</option>
+                    <option value="sub">Add SUB Category</option>
+                  </Form.Select>
+
+                  <form onSubmit={handleSubmit}>
+                    {/* SUB CATEGORY PARENT SELECT */}
+                    {mode === "sub" && (
+                      <>
+                        <Form.Select
+                          className="mb-3"
+                          value={formData.category_id}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              category_id: e.target.value,
+                            })
+                          }
+                        >
+                          <option value="">Select Parent Category</option>
+                          {categories
+                            .filter((cat) => cat.parent === 0) // only main categories
+                            .map((cat) => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.category_name}
+                              </option>
+                            ))}
+                        </Form.Select>
+
+                        {errors.category_id && (
+                          <div className="text-danger mb-2">
+                            {errors.category_id}
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* CATEGORY NAME */}
+                    <div className="mb-3">
+                      <label className="form-label">
+                        {mode === "main" ? "Category Name" : "Subcategory Name"}
+                      </label>
+                      <input
+                        type="text"
+                        className={`form-control ${
+                          errors.category_name ? "is-invalid" : ""
+                        }`}
+                        value={formData.category_name}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            category_name: e.target.value,
+                          })
+                        }
+                      />
+                      {errors.category_name && (
+                        <div className="invalid-feedback">
+                          {errors.category_name}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* IMAGE */}
+                    <Form.Group className="position-relative mb-3">
+                      <Form.Label>
+                        Upload {mode === "main" ? "Category" : "Subcategory"}{" "}
+                        Image
+                      </Form.Label>
+                      <Form.Control
+                        type="file"
+                        onChange={handleFileChange}
+                        isInvalid={!!errors.file}
+                      />
+                      <Form.Control.Feedback type="invalid" tooltip>
+                        {errors.file}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="lg"
+                      disabled={loading}
                     >
-                      <option>Electronics</option>
-                      <option>Audio</option>
-                      <option>Accessories</option>
-                      <option>Computers</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-md-4">
-                  <div className="mb-3">
-                    <label htmlFor="productPrice" className="form-label">
-                      Price ($)
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="productPrice"
-                      defaultValue="129.99"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="mb-3">
-                    <label htmlFor="productStock" className="form-label">
-                      Stock
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="productStock"
-                      defaultValue="45"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="mb-3">
-                    <label htmlFor="productStatus" className="form-label">
-                      Status
-                    </label>
-                    <select
-                      className="form-select"
-                      id="productStatus"
-                      defaultValue="Published"
-                    >
-                      <option>Published</option>
-                      <option>Draft</option>
-                      <option>Out of Stock</option>
-                    </select>
-                  </div>
+                      {loading ? "Submitting..." : "Submit"}
+                    </Button>
+                  </form>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Inventory */}
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">Inventory</h5>
-            </div>
-            <div className="card-body">
-              <div className="row">
-                <div className="col-md-6">
-                  <div className="mb-3">
-                    <label htmlFor="weight" className="form-label">
-                      Weight (kg)
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="weight"
-                      defaultValue="0.45"
-                    />
-                  </div>
+            {/* PREVIEW */}
+            <div className="col-md-4">
+              <div className="card">
+                <div className="card-header">
+                  <h5 className="card-title mb-0">Image Preview</h5>
                 </div>
-                <div className="col-md-6">
-                  <div className="mb-3">
-                    <label htmlFor="dimensions" className="form-label">
-                      Dimensions (cm)
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="dimensions"
-                      defaultValue="18 x 15 x 6"
-                    />
-                  </div>
+                <div className="card-body text-center">
+                  <img
+                    src={
+                      formData.file
+                        ? URL.createObjectURL(formData.file)
+                        : "https://via.placeholder.com/250"
+                    }
+                    className="img-fluid rounded"
+                    alt="Preview"
+                  />
                 </div>
-              </div>
-              <div className="form-check form-switch mb-3">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="trackInventory"
-                  defaultChecked
-                />
-                <label className="form-check-label" htmlFor="trackInventory">
-                  Track inventory
-                </label>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Right Section */}
-        <div className="col-md-4">
-          {/* Product Image */}
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">Product Image</h5>
-            </div>
-            <div className="card-body">
-              <div className="image-upload mb-3">
-                <i className="bi bi-cloud-arrow-up fs-1 text-muted"></i>
-                <p>Click to upload or drag and drop</p>
-                <p className="text-muted small">
-                  SVG, PNG, JPG or GIF (max. 800x400px)
-                </p>
-              </div>
-              <div className="border rounded p-2 text-center">
-                <img
-                  src="https://via.placeholder.com/250"
-                  className="img-fluid rounded"
-                  alt="Product"
-                />
-                <div className="d-flex justify-content-center mt-2">
-                  <button className="btn btn-sm btn-outline-danger me-2">
-                    Remove
-                  </button>
-                  <button className="btn btn-sm btn-outline-primary">
-                    Replace
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Organization */}
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">Organization</h5>
-            </div>
-            <div className="card-body">
-              <div className="mb-3">
-                <label htmlFor="vendor" className="form-label">
-                  Vendor
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="vendor"
-                  defaultValue="AudioTech Inc."
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="collections" className="form-label">
-                  Collections
-                </label>
-                <select
-                  className="form-select"
-                  id="collections"
-                  multiple
-                  defaultValue={["Audio", "Wireless"]}
-                >
-                  <option>Audio</option>
-                  <option>Wireless</option>
-                  <option>New Arrivals</option>
-                  <option>On Sale</option>
-                </select>
-              </div>
-              <div className="mb-3">
-                <label htmlFor="tags" className="form-label">
-                  Tags
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="tags"
-                  defaultValue="bluetooth, wireless, headphones, audio"
-                />
-                <div className="form-text">Separate tags with commas</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
       </div>
     </div>
   );

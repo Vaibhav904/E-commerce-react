@@ -1,50 +1,211 @@
-import React from 'react';
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { clearBuyNowProduct } from "../Redux/buyNowSlice";
 
-export default function Ordersum() {
+export default function Ordersum({ selectedAddress }) {
+  const [checkoutData, setCheckoutData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const buyNowProduct = useSelector((state) => state.buyNow?.product || null);
+
+  // console.log("buyNowProduct", checkoutData);
+
+  const dispatch = useDispatch();
+  const token = localStorage.getItem("token");
+
+  /* ================= CART CHECKOUT ================= */
+  const fetchCheckout = async () => {
+    try {
+      const res = await axios.post(
+        "http://tech-shop.techsaga.live/api/checkout",
+        { is_quick: false },
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      setCheckoutData(res.data);
+    } catch (err) {
+      console.error("Checkout error", err);
+    }
+  };
+
+  /* ================= SET CHECKOUT DATA ================= */
+  useEffect(() => {
+    if (buyNowProduct) {
+      const price = Number(buyNowProduct.price) || 0;
+      const qty = buyNowProduct.quantity || 1;
+
+      setCheckoutData({
+        items: [
+          {
+            id: buyNowProduct.id,
+            product: buyNowProduct.name,
+            price: price,
+            quantity: qty,
+            total: price * qty,
+            image:
+              buyNowProduct.image ||
+              buyNowProduct.image_url ||
+              buyNowProduct.thumbnail ||
+              buyNowProduct.product_image ||
+              "https://cdn-icons-png.flaticon.com/512/30/30543.png",
+          },
+        ],
+        subtotal: price * qty,
+        offerdiscount: 0,
+        taxes: 0,
+        shipping: 0,
+        total: price * qty,
+      });
+    } else {
+      fetchCheckout();
+    }
+  }, [buyNowProduct]);
+
+  /* ================= PLACE ORDER ================= */
+  const handlePlaceOrder = async () => {
+    if (!token) {
+      alert("Please login first");
+      return;
+    }
+
+    if (!selectedAddress?.id) {
+      alert("Please select shipping address");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const isQuickOrder = Boolean(buyNowProduct);
+
+      // 1️⃣ PLACE ORDER
+      const { data: orderData } = await axios.post(
+        "http://tech-shop.techsaga.live/api/place-order",
+        {
+          is_quick: isQuickOrder,
+          address_id: selectedAddress.id,
+          total: checkoutData.total,
+
+          // ⚠️ total sirf BUY NOW ke liye
+          ...(isQuickOrder && {
+            product_id: checkoutData?.items?.[0]?.id,
+            quantity: checkoutData?.items?.[0]?.quantity,
+          }),
+        },
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (orderData?.order_id) {
+        localStorage.setItem("last_order_id", String(orderData.order_id));
+      }
+
+      // 🔥 CART FALLBACK FIX
+      const finalAmount =
+        Number(orderData.amount) > 0
+          ? Number(orderData.amount)
+          : Number(checkoutData.total);
+
+      const stripeAmount = finalAmount;
+
+      // 2️⃣ STRIPE CHECKOUT
+      const { data } = await axios.post(
+        "http://tech-shop.techsaga.live/api/create-checkout-session",
+        {
+          amount: stripeAmount,
+          order_id: orderData.order_id,
+          url: window.location.origin,
+        },
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      window.location.href = data.url;
+    } catch (err) {
+      console.error("Payment error", err.response?.data || err);
+      alert("Payment failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= CLEAR BUY NOW ================= */
+  useEffect(() => {
+    return () => {
+      dispatch(clearBuyNowProduct());
+    };
+  }, []);
+
   return (
     <div className="right-side">
       <h5 className="section-title mb-4">
-        <i className="fas fa-shopping-bag section-title-icon"></i>Order Summary
+        {buyNowProduct ? "Buy Now Order Summary" : "Cart Order Summary"}
       </h5>
 
-      <div className="product-summary d-flex align-items-center">
-        <div className="product-thumb position-relative">
-          <div className="quantity-bubble">7</div>
-          <img src="https://cdn-icons-png.flaticon.com/512/30/30543.png" alt="Sunglasses" />
-        </div>
-        <div className="product-info">
-          <p className="product-name mb-0">Cateye sunglasses</p>
-          <p className="product-desc mb-0">Black • Size: Standard</p>
-        </div>
-        <div className="product-price">$69.30</div>
-      </div>
+      {/* PRODUCTS */}
+      {checkoutData?.items?.map((item, index) => (
+        <div className="product-summary d-flex align-items-center" key={index}>
+          <div className="product-thumb position-relative">
+            <span className="quantity-bubble">{item.quantity}</span>
+            <img src={item.image} alt={item.product} />
+          </div>
 
-      <div className="order-totals">
-        <div className="giftcard-input input-group mb-4">
-          <input type="text" className="form-control" placeholder="Gift card or discount code" />
-          <button className="btn" type="button">Apply</button>
-        </div>
+          <div className="product-info">
+            <p className="mb-0">{item.product}</p>
+            <small>₹{item.price}</small>
+          </div>
 
-        <div className="totals">
-          <div className="label">Subtotal</div>
-          <div className="value">$69.30</div>
+          <div className="product-price">₹{item.total}</div>
         </div>
-        <div className="totals">
-          <div className="label">Shipping</div>
-          <div className="text-muted">Enter shipping address</div>
-        </div>
-        <div className="totals">
-          <div className="label">Estimated taxes</div>
-          <div className="value">$6.93</div>
-        </div>
-        <div className="total-container">
-          <div>Total</div>
-          <div>
-            <span className="total-currency">USD</span>
-            <span>$76.23</span>
+      ))}
+
+      {/* TOTALS */}
+      {checkoutData && (
+        <div className="order-totals">
+          <div className="totals">
+            <span>Subtotal</span>
+            <span>₹{checkoutData.subtotal}</span>
+          </div>
+          <div className="totals">
+            <span>Discount</span>
+            <span>₹{checkoutData.offerdiscount}</span>
+          </div>
+          <div className="totals">
+            <span>GST</span>
+            <span>₹{checkoutData.taxes}</span>
+          </div>
+          <div className="totals">
+            <span>Shipping</span>
+            <span>₹{checkoutData.shipping}</span>
+          </div>
+          <div className="totals total">
+            <strong>Total</strong>
+            <strong>₹{checkoutData.total}</strong>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* PAY BUTTON */}
+      <button
+        onClick={handlePlaceOrder}
+        className="btn-shop-pay mt-4"
+        disabled={loading}
+      >
+        {loading ? "Processing..." : "Pay & Place Order"}
+      </button>
     </div>
   );
 }
