@@ -604,6 +604,9 @@ h2 {
   text-transform: capitalize;
   padding-top: 12px;
 }
+.price-rangefilter{
+  margin-bottom: 14px;
+}
 
 .seller-card p {
   font-size: 16px;

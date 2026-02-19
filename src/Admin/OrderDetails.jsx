@@ -12,12 +12,20 @@ export default function OrderDetails() {
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
-const makeSlug = (text) =>
-  text
-    ?.toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-");
+
+  const downloadInvoice = () => {
+  fetch(order.invoice_url)
+    .then(res => res.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "invoice.pdf";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+};
+
 
   useEffect(() => {
     if (!id || fetchedRef.current) return;
@@ -78,16 +86,11 @@ const makeSlug = (text) =>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2 className="dashboard-title">Order #{order.order_id}</h2>
 
-            {order.invoice_url && (
-              <a
-                href={order.invoice_url}
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-dark"
-              >
-                Download Invoice
-              </a>
-            )}
+           {order.invoice_url && (
+  <button className="btn btn-dark" onClick={downloadInvoice}>
+    Download Invoice
+  </button>
+)}
           </div>
 
           {/* INFO */}
@@ -143,12 +146,12 @@ const makeSlug = (text) =>
 
                       {/* ✅ PRODUCT LINK (SLUG BASED) */}
                       <td>
-                        <Link
-    to={`/product/${makeSlug(item.product_name)}`}
-    className="text-primary fw-semibold text-decoration-none"
-  >
-                          {item.product_name}
-                        </Link>
+                    <Link
+  to={`/product/${item.product_slug}`}
+  className="text-primary fw-semibold text-decoration-none"
+>
+  {item.product_name}
+</Link>
                       </td>
 
                       <td>{item.product_description}</td>

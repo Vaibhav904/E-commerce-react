@@ -59,18 +59,15 @@ function App() {
         {/* ---------- ADMIN AUTH REDIRECTS ---------- */}
 
         {/* /admin → Login या Dashboard */}
-        <Route
-          path="/admin"
-          element={
-            token ? <Navigate to="/admin/dashboard" replace /> : <Admin />
-          }
-        />
+       <Route
+  path="/admin"
+  element={token ? <Navigate to="/admin/dashboard" replace /> : <Admin />}
+/>
 
-        {/* Dashboard Protected Route */}
-        <Route
-          path="/admin/dashboard"
-          element={token ? <Dashboard /> : <Navigate to="/admin" replace />}
-        />
+<Route
+  path="/admin/dashboard"
+  element={token ? <Dashboard /> : <Navigate to="/admin" replace />}
+/>
 
         {/* Other admin protected routes */}
         <Route

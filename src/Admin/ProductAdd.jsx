@@ -6,166 +6,231 @@ import AdminSidebar from "./AdminSidebar";
 export default function ProductAdd() {
   const token = localStorage.getItem("token");
 
-  /* ================= BASIC STATES ================= */
+  /* ================= BASIC ================= */
   const [name, setName] = useState("");
-  const [productStatus, setProductStatus] = useState("published");
-  const [isVariant, setIsVariant] = useState(1);
   const [description, setDescription] = useState("");
+  const [productStatus, setProductStatus] = useState("published");
+  const [isVariant, setIsVariant] = useState(false);
 
-  /* ================= CATEGORY STATES ================= */
+  /* ================= CATEGORY ================= */
   const [categories, setCategories] = useState([]);
+  const [attributes, setAttributes] = useState([]);
   const [parentCategory, setParentCategory] = useState("");
   const [childCategory, setChildCategory] = useState("");
 
-  console.log('parentCategory', parentCategory);
-  console.log('childCategory', childCategory);
+  /* ================= VARIANTS ================= */
+const [variants, setVariants] = useState([
+  {
+    sku: "",
+    base_price: "",
+    discount: "",
+    stock: "",
+    weight: "",
+    dimensions: "",
+    images: [],
+    attr: {
+      size: "",
+      color: [""],   // must be array
+    },
+  },
+]);
 
-  /* ================= VARIANT STATES ================= */
-  const [sku, setSku] = useState("");
-  const [basePrice, setBasePrice] = useState("");
-  const [discount, setDiscount] = useState("");
-  const [stock, setStock] = useState("");
-  const [weight, setWeight] = useState("");
-  const [dimensions, setDimensions] = useState("");
+const handleColorChange = (variantIndex, colorIndex, value) => {
+  const updated = [...variants];
+  updated[variantIndex] = {
+    ...updated[variantIndex],
+    attr: {
+      ...updated[variantIndex].attr,
+      color: updated[variantIndex].attr.color.map((c, i) =>
+        i === colorIndex ? value : c
+      ),
+    },
+  };
+  setVariants(updated);
+};
 
-  /* ================= ATTRIBUTES ================= */
-  const [sizeValues, setSizeValues] = useState([{ label: "", value: "" }]);
-  const [colorValues, setColorValues] = useState([{ label: "", value: "" }]);
+const addColorField = (variantIndex) => {
+  const updated = [...variants];
+  updated[variantIndex] = {
+    ...updated[variantIndex],
+    attr: {
+      ...updated[variantIndex].attr,
+      color: [...updated[variantIndex].attr.color, ""],
+    },
+  };
+  setVariants(updated);
+};
 
-  /* ================= IMAGES ================= */
-  const [variantImages, setVariantImages] = useState([]);
+  const removeColorField = (variantIndex, colorIndex) => {
+    const updated = [...variants];
+    updated[variantIndex].attr.color.splice(colorIndex, 1);
+    setVariants(updated);
+  };
+
+ 
+
+  console.log("variants", variants);
 
   /* ================= CATEGORY API ================= */
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
     axios
       .get("http://tech-shop.techsaga.live/api/v1/category/categoryListing", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => setCategories(res.data.data))
-      .catch((err) => console.error(err));
+      .then((res) => {
+        setCategories(res.data.data);
+        setAttributes(res.data.attributes);
+      })
+      .catch(console.error);
   }, []);
 
   const parentCategories = categories.filter((c) => c.parent === 0);
   const childCategories = categories.filter((c) => c.parent == parentCategory);
 
-  /* ================= ATTR HANDLERS ================= */
-  const addRow = (setter, state) =>
-    setter([...state, { label: "", value: "" }]);
+  const sizeAttribute = attributes?.find(
+    (a) => a?.name?.toLowerCase() === "size",
+  );
 
-  const removeRow = (setter, state, index) =>
-    setter(state.filter((_, i) => i !== index));
+  const colorAttribute = attributes?.find(
+    (a) => a?.name?.toLowerCase() === "color",
+  );
 
-  const handleAttrChange = (setter, state, index, field, value) => {
-    const updated = [...state];
+  /* ================= HANDLERS ================= */
+
+  const handleVariantChange = (index, field, value) => {
+    const updated = [...variants];
     updated[index][field] = value;
-    setter(updated);
+    setVariants(updated);
   };
 
-  /* ================= SUBMIT ATTRIBUTES ================= */
-  const submitAttributes = async () => {
-    try {
-      if (sizeValues.some((v) => v.label && v.value)) {
-        const fd = new FormData();
-        fd.append("name", "size");
-        sizeValues.forEach((v) => {
-          if (v.label && v.value) {
-            fd.append("attribute_value[]", v.label);
-            fd.append("values[]", v.value);
-          }
-        });
-        await axios.post(
-          "http://tech-shop.techsaga.live/api/v1/attribute/add",
-          fd,
-          { headers: { Authorization: `Bearer ${token}` } }
+  const handleAttrChange = (index, field, value) => {
+    const updated = [...variants];
+    updated[index].attr[field] = value;
+    setVariants(updated);
+  };
+
+  const handleOtherChange = (index, type, field, value) => {
+    const updated = [...variants];
+    updated[index][type][field] = value;
+    setVariants(updated);
+  };
+
+  const handleImages = (index, files) => {
+    const updated = [...variants];
+    updated[index].images = [...files];
+    setVariants(updated);
+  };
+
+const addVariant = () => {
+  setVariants([
+    ...variants,
+    {
+      sku: "",
+      base_price: "",
+      discount: "",
+      stock: "",
+      weight: "",
+      dimensions: "",
+      images: [],
+      attr: {
+        size: "",
+        color: [""],   // fresh array every time
+      },
+    },
+  ]);
+};
+
+  /* ================= CREATE ATTRIBUTE ================= */
+
+  const createAttributeValue = async (attrName, label, value) => {
+    const fd = new FormData();
+    fd.append("name", attrName);
+    fd.append("attribute_value[]", label);
+    fd.append("values[]", value);
+
+    const res = await axios.post(
+      "http://tech-shop.techsaga.live/api/v1/attribute/add",
+      fd,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+
+    return res.data?.data?.attribute_value_id;
+  };
+
+  /* ================= SUBMIT ================= */
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+
+    formData.append("name", name);
+    formData.append("category_id", parentCategory);
+    formData.append("subcategory_id", childCategory);
+    formData.append("product_status", productStatus);
+    formData.append("is_variant", isVariant ? 1 : 0);
+    formData.append("description", description);
+
+    for (let i = 0; i < variants.length; i++) {
+      const v = variants[i];
+
+      let sizeId = v.attr.size;
+
+      // SIZE OTHER CHECK (if you use it later)
+      if (v.attr.size === "other") {
+        sizeId = await createAttributeValue(
+          v.otherSize.name,
+          v.otherSize.label,
+          v.otherSize.value,
         );
       }
 
-      if (colorValues.some((v) => v.label && v.value)) {
-        const fd = new FormData();
-        fd.append("name", "color");
-        colorValues.forEach((v) => {
-          if (v.label && v.value) {
-            fd.append("attribute_value[]", v.label);
-            fd.append("values[]", v.value);
+      formData.append(`variants[${i}][sku]`, v.sku);
+      formData.append(`variants[${i}][base_price]`, v.base_price);
+      formData.append(`variants[${i}][discount]`, v.discount);
+      formData.append(`variants[${i}][stock]`, v.stock);
+      formData.append(`variants[${i}][weight]`, v.weight);
+      formData.append(`variants[${i}][dimensions]`, v.dimensions);
+
+      // ✅ SIZE (Single)
+      if (sizeId) {
+        formData.append(`variants[${i}][attr][2]`, Number(sizeId));
+      }
+
+      // ✅ COLOR (Multiple)
+      if (v.attr.color?.length > 0) {
+        v.attr.color.forEach((colorId) => {
+          if (colorId) {
+            formData.append(`variants[${i}][attr][1][]`, Number(colorId));
           }
         });
-        await axios.post(
-          "http://tech-shop.techsaga.live/api/v1/attribute/add",
-          fd,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
       }
+
+      // ✅ IMAGES
+      v.images.forEach((img) => {
+        formData.append(`variant_images[${i}][]`, img);
+      });
+    }
+
+    try {
+      await axios.post(
+        "http://tech-shop.techsaga.live/api/v1/products/store",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+      alert("Product Added Successfully ✅");
     } catch (err) {
-      console.error(err);
+      console.log(err.response?.data);
+      alert("Product Add Failed ❌");
     }
   };
 
-  /* ================= SUBMIT PRODUCT ================= */
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  const finalCategoryId = childCategory || parentCategory;
-
-  if (!finalCategoryId) {
-    alert("Please select category or sub category");
-    return;
-  }
-
-  if (!sku || !basePrice || !stock) {
-    alert("SKU, Base Price & Stock are required");
-    return;
-  }
-
-  if (variantImages.length === 0) {
-    alert("Please upload at least one product image");
-    return;
-  }
-
-  const formData = new FormData();
-
-  formData.append("name", name);
-  formData.append("category_id", Number(parentCategory));
-  formData.append("subcategory_id", Number(childCategory));
-  formData.append("product_status", productStatus);
-  formData.append("is_variant", isVariant);
-  formData.append("description", description);
-
-  formData.append("variants[0][sku]", sku);
-  formData.append("variants[0][base_price]", basePrice);
-  formData.append("variants[0][discount]", discount);
-  formData.append("variants[0][stock]", stock);
-  formData.append("variants[0][weight]", weight);
-  formData.append("variants[0][dimensions]", dimensions);
-
-  variantImages.forEach((file) =>
-    formData.append("variant_images[0][]", file)
-  );
-
-
-  // console.log('formData', formData);
-  try {
-    await axios.post(
-      "http://tech-shop.techsaga.live/api/v1/products/store",
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-    alert("Product Added Successfully ✅");
-  } catch (err) {
-    console.log(err.response.data);
-    alert("Product Add Failed ❌");
-  }
-};
-
+  /* ================= JSX ================= */
 
   return (
     <div className="d-flex">
@@ -173,164 +238,191 @@ const handleSubmit = async (e) => {
       <div className="dash-header w-100">
         <AdminHeader />
         <h2 className="dashboard-title">Add Product</h2>
-
         <div className="container mt-4">
           <form onSubmit={handleSubmit} className="p-4 bg-white shadow rounded">
-            {/* BASIC */}
-           <label className="form-label">Product Name</label>
-<input
-  className="form-control mb-3"
-  placeholder="Product Name"
-  onChange={(e) => setName(e.target.value)}
-/>
+            {/* PRODUCT NAME */}
+            <input
+              className="form-control mb-3"
+              placeholder="Product Name"
+              onChange={(e) => setName(e.target.value)}
+            />
 
-{/* CATEGORY */}
-<label className="form-label">Parent Category</label>
-<select
-  className="form-control mb-3"
-  value={parentCategory}
-  onChange={(e) => {
-    setParentCategory(e.target.value);
-    setChildCategory("");
-  }}
->
-  <option value="">Select Parent Category</option>
-  {parentCategories.map((c) => (
-    <option key={c.id} value={c.id}>
-      {c.category_name}
-    </option>
-  ))}
-</select>
+            {/* CATEGORY */}
+            <select
+              className="form-control mb-3"
+              onChange={(e) => {
+                setParentCategory(e.target.value);
+                setChildCategory("");
+              }}
+            >
+              <option value="">Parent Category</option>
+              {parentCategories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.category_name}
+                </option>
+              ))}
+            </select>
 
-<label className="form-label">Child Category</label>
-<select
-  className="form-control mb-3"
-  value={childCategory}
-  onChange={(e) => setChildCategory(e.target.value)}
-  disabled={!parentCategory}
->
-  <option value="">Select Child Category</option>
-  {childCategories.map((c) => (
-    <option key={c.id} value={c.id}>
-      {c.category_name}
-    </option>
-  ))}
-</select>
+            <select
+              className="form-control mb-3"
+              disabled={!parentCategory}
+              onChange={(e) => setChildCategory(e.target.value)}
+            >
+              <option value="">Child Category</option>
+              {childCategories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.category_name}
+                </option>
+              ))}
+            </select>
 
-<label className="form-label">Description</label>
-<textarea
-  className="form-control mb-3"
-  placeholder="Description"
-  onChange={(e) => setDescription(e.target.value)}
-/>
+            {/* DESCRIPTION */}
+            <textarea
+              className="form-control mb-3"
+              placeholder="Description"
+              onChange={(e) => setDescription(e.target.value)}
+            />
 
-{/* VARIANT */}
-<label className="form-label">SKU</label>
-<input className="form-control mb-2" placeholder="SKU" onChange={(e) => setSku(e.target.value)} />
+            {/* VARIANT CHECK */}
+            <div className="form-check mb-4">
+              <input
+                className="form-check-input variants-check"
+                type="checkbox"
+                checked={isVariant}
+                onChange={(e) => setIsVariant(e.target.checked)}
+              />
+              <label className="form-check-label variants-text">
+                This product has variants
+              </label>
+            </div>
 
-<label className="form-label">Base Price</label>
-<input className="form-control mb-2" placeholder="Base Price" onChange={(e) => setBasePrice(e.target.value)} />
-
-<label className="form-label">Discount</label>
-<input className="form-control mb-2" placeholder="Discount" onChange={(e) => setDiscount(e.target.value)} />
-
-<label className="form-label">Stock</label>
-<input className="form-control mb-2" placeholder="Stock" onChange={(e) => setStock(e.target.value)} />
-
-<label className="form-label">Variant Images</label>
-<input
-  type="file"
-  multiple
-  className="form-control mb-3"
-  onChange={(e) => setVariantImages([...e.target.files])}
-/>
-            {/* SIZE */}
-            <h5>Size</h5>
-            {sizeValues.map((i, idx) => (
-              <div className="d-flex gap-2 mb-2" key={idx}>
+            {/* VARIANTS */}
+            {variants.map((v, i) => (
+              <div key={i} className="border p-3 mb-3">
                 <input
-                  className="form-control"
-                  placeholder="XL"
-                  value={i.label}
+                  className="form-control mb-2"
+                  placeholder="SKU"
                   onChange={(e) =>
-                    handleAttrChange(
-                      setSizeValues,
-                      sizeValues,
-                      idx,
-                      "label",
-                      e.target.value
-                    )
+                    handleVariantChange(i, "sku", e.target.value)
                   }
                 />
+
                 <input
-                  className="form-control"
-                  placeholder="xl"
-                  value={i.value}
+                  className="form-control mb-2"
+                  placeholder="Base Price"
                   onChange={(e) =>
-                    handleAttrChange(
-                      setSizeValues,
-                      sizeValues,
-                      idx,
-                      "value",
-                      e.target.value
-                    )
+                    handleVariantChange(i, "base_price", e.target.value)
                   }
                 />
-                <button
-                  type="button"
-                  className="btn btn-success"
-                  onClick={() => addRow(setSizeValues, sizeValues)}
-                >
-                  +
-                </button>
+
+                <input
+                  className="form-control mb-2"
+                  placeholder="Discount"
+                  onChange={(e) =>
+                    handleVariantChange(i, "discount", e.target.value)
+                  }
+                />
+
+                <input
+                  className="form-control mb-2"
+                  placeholder="Stock"
+                  onChange={(e) =>
+                    handleVariantChange(i, "stock", e.target.value)
+                  }
+                />
+
+                {isVariant && (
+                  <>
+                    <select
+                      className="form-control mb-2"
+                      onChange={(e) =>
+                        handleAttrChange(i, "size", e.target.value)
+                      }
+                    >
+                      <option value="">Select Size</option>
+                      {sizeAttribute?.values?.map((val) => (
+                        <option key={val.id} value={val.id}>
+                          {val.value}
+                        </option>
+                      ))}
+                      {/* <option value="other">Other</option> */}
+                    </select>
+
+                    {/* {v.attr.size === "other" && (
+                      <>
+                        <input className="form-control mb-2" placeholder="Attribute Name (size)" onChange={(e)=>handleOtherChange(i,"otherSize","name",e.target.value)} />
+                        <input className="form-control mb-2" placeholder="Label (XL)" onChange={(e)=>handleOtherChange(i,"otherSize","label",e.target.value)} />
+                        <input className="form-control mb-2" placeholder="Value (xl)" onChange={(e)=>handleOtherChange(i,"otherSize","value",e.target.value)} />
+                      </>
+                    )} */}
+
+                    {v.attr.color.map((colorValue, colorIndex) => (
+                      <div key={colorIndex} className="d-flex mb-2 gap-2">
+                        <select
+                          className="form-control"
+                          value={colorValue}
+                          onChange={(e) =>
+                            handleColorChange(i, colorIndex, e.target.value)
+                          }
+                        >
+                          <option value="">Select Color</option>
+                          {colorAttribute?.values?.map((val) => (
+                            <option key={val.id} value={val.id}>
+                              {val.value}
+                            </option>
+                          ))}
+                        </select>
+
+                        {v.attr.color.length > 1 && (
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={() => removeColorField(i, colorIndex)}
+                          >
+                            X
+                          </button>
+                        )}
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-secondary"
+                      onClick={() => addColorField(i)}
+                    >
+                      + Add Color
+                    </button>
+                    {/* 
+                    {v.attr.color === "other" && (
+                      <>
+                        <input className="form-control mb-2" placeholder="Attribute Name (color)" onChange={(e)=>handleOtherChange(i,"otherColor","name",e.target.value)} />
+                        <input className="form-control mb-2" placeholder="Label (Purple)" onChange={(e)=>handleOtherChange(i,"otherColor","label",e.target.value)} />
+                        <input className="form-control mb-2" placeholder="Value (#800080)" onChange={(e)=>handleOtherChange(i,"otherColor","value",e.target.value)} />
+                      </>
+                    )} */}
+                  </>
+                )}
+
+                <input
+                  type="file"
+                  multiple
+                  className="form-control"
+                  onChange={(e) => handleImages(i, e.target.files)}
+                />
               </div>
             ))}
 
-            {/* COLOR */}
-            <h5>Color</h5>
-            {colorValues.map((i, idx) => (
-              <div className="d-flex gap-2 mb-2" key={idx}>
-                <input
-                  className="form-control"
-                  placeholder="Red"
-                  value={i.label}
-                  onChange={(e) =>
-                    handleAttrChange(
-                      setColorValues,
-                      colorValues,
-                      idx,
-                      "label",
-                      e.target.value
-                    )
-                  }
-                />
-                <input
-                  className="form-control"
-                  placeholder="red"
-                  value={i.value}
-                  onChange={(e) =>
-                    handleAttrChange(
-                      setColorValues,
-                      colorValues,
-                      idx,
-                      "value",
-                      e.target.value
-                    )
-                  }
-                />
-                <button
-                  type="button"
-                  className="btn btn-success"
-                  onClick={() => addRow(setColorValues, colorValues)}
-                >
-                  +
-                </button>
-              </div>
-            ))}
+            {isVariant && (
+              <button
+                type="button"
+                className="btn btn-secondary mb-3"
+                onClick={addVariant}
+              >
+                + Add More Variant
+              </button>
+            )}
 
-            <button className="btn btn-primary mt-4 px-5" type="submit">
-              Save Product
-            </button>
+            <button className="btn btn-primary w-100">Add Product</button>
           </form>
         </div>
       </div>

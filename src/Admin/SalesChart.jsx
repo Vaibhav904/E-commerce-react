@@ -1,5 +1,11 @@
 import React from "react";
-import { FaSearch, FaBell, FaDollarSign, FaShoppingCart, FaUsers, FaChartLine, FaBox } from "react-icons/fa";
+import {
+  FaDollarSign,
+  FaShoppingCart,
+  FaUsers,
+  FaChartLine,
+  FaBox,
+} from "react-icons/fa";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -21,7 +27,8 @@ ChartJS.register(
 );
 
 const SalesChart = () => {
-      const data = {
+  // SALES CHART DATA
+  const salesData = {
     labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
     datasets: [
       {
@@ -31,6 +38,38 @@ const SalesChart = () => {
         backgroundColor: "rgba(75,192,192,0.2)",
         tension: 0.4,
         pointBackgroundColor: "rgba(75,192,192,1)",
+        fill: true,
+      },
+    ],
+  };
+
+  // TRAFFIC SOURCES DATA
+  const trafficData = {
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    datasets: [
+      {
+        label: "Direct",
+        data: [120, 190, 170, 220, 200, 180, 210],
+        borderColor: "#4e73df",
+        backgroundColor: "rgba(78,115,223,0.2)",
+        tension: 0.4,
+        fill: true,
+      },
+      {
+        label: "Organic",
+        data: [90, 140, 130, 160, 150, 170, 180],
+        borderColor: "#1cc88a",
+        backgroundColor: "rgba(28,200,138,0.2)",
+        tension: 0.4,
+        fill: true,
+      },
+      {
+        label: "Social",
+        data: [60, 80, 75, 100, 95, 110, 120],
+        borderColor: "#f6c23e",
+        backgroundColor: "rgba(246,194,62,0.2)",
+        tension: 0.4,
+        fill: true,
       },
     ],
   };
@@ -39,22 +78,21 @@ const SalesChart = () => {
     responsive: true,
     plugins: {
       legend: { position: "top" },
-      tooltip: { enabled: true },
+      tooltip: { mode: "index", intersect: false },
     },
     scales: {
-      y: {
-        beginAtZero: true,
-      },
+      y: { beginAtZero: true },
     },
   };
+
   return (
     <div className="main-content">
-      {/* Stats Cards */}
+      {/* STATS CARDS */}
       <div className="stats-cards">
         <div className="card stat-card">
           <div className="stat-info">
             <h3>TOTAL SALES</h3>
-            <p>$24,562</p>
+            <p>₹24,562</p>
             <span>+12% from last week</span>
           </div>
           <div className="stat-icon sales">
@@ -87,7 +125,7 @@ const SalesChart = () => {
         <div className="card stat-card">
           <div className="stat-info">
             <h3>TOTAL REVENUE</h3>
-            <p>$18,256</p>
+            <p>₹18,256</p>
             <span>+10% from last week</span>
           </div>
           <div className="stat-icon revenue">
@@ -96,110 +134,55 @@ const SalesChart = () => {
         </div>
       </div>
 
-      {/* Charts */}
+      {/* CHARTS */}
       <div className="charts">
         <div className="card">
           <h3>Sales Overview</h3>
           <div className="chart-container">
-            <Line data={data} options={options} />
+            <Line data={salesData} options={options} />
           </div>
         </div>
+
         <div className="card">
           <h3>Traffic Sources</h3>
           <div className="chart-container">
-            <canvas></canvas>
+            <Line data={trafficData} options={options} />
           </div>
         </div>
       </div>
 
-      {/* Recent Orders */}
+      {/* RECENT ORDERS */}
       <div className="card">
         <h3>Recent Orders</h3>
 
-        <div className="order-item">
-          <div className="order-info">
-            <div className="order-img">
-              <FaBox />
+        {[
+          ["#ORD-001", "John Doe • Wireless Headphones", "₹150", "Delivered"],
+          ["#ORD-002", "Jane Smith • Smart Watch", "₹250", "Processing"],
+          ["#ORD-003", "Robert Johnson • Sneakers", "₹120", "Delivered"],
+          ["#ORD-004", "Sarah Williams • Backpack", "₹80", "Cancelled"],
+          ["#ORD-005", "Michael Brown • Water Bottle", "₹30", "Delivered"],
+        ].map((order, i) => (
+          <div className="order-item" key={i}>
+            <div className="order-info">
+              <div className="order-img">
+                <FaBox />
+              </div>
+              <div>
+                <h4>{order[0]}</h4>
+                <p>{order[1]}</p>
+                <span>Nov 2023</span>
+              </div>
             </div>
             <div>
-              <h4>#ORD-001</h4>
-              <p>John Doe • Wireless Headphones</p>
-              <span>12 Nov 2023</span>
+              <p>
+                <strong>{order[2]}</strong>
+              </p>
+              <span className={`order-status ${order[3].toLowerCase()}`}>
+                {order[3]}
+              </span>
             </div>
           </div>
-          <div>
-            <p><strong>$150</strong></p>
-            <span className="order-status delivered">Delivered</span>
-          </div>
-        </div>
-
-        <div className="order-item">
-          <div className="order-info">
-            <div className="order-img">
-              <FaBox />
-            </div>
-            <div>
-              <h4>#ORD-002</h4>
-              <p>Jane Smith • Smart Watch</p>
-              <span>11 Nov 2023</span>
-            </div>
-          </div>
-          <div>
-            <p><strong>$250</strong></p>
-            <span className="order-status processing">Processing</span>
-          </div>
-        </div>
-
-        <div className="order-item">
-          <div className="order-info">
-            <div className="order-img">
-              <FaBox />
-            </div>
-            <div>
-              <h4>#ORD-003</h4>
-              <p>Robert Johnson • Sneakers</p>
-              <span>10 Nov 2023</span>
-            </div>
-          </div>
-          <div>
-            <p><strong>$120</strong></p>
-            <span className="order-status delivered">Delivered</span>
-          </div>
-        </div>
-
-        <div className="order-item">
-          <div className="order-info">
-            <div className="order-img">
-              <FaBox />
-            </div>
-            <div>
-              <h4>#ORD-004</h4>
-              <p>Sarah Williams • Backpack</p>
-              <span>09 Nov 2023</span>
-            </div>
-          </div>
-          <div>
-            <p><strong>$80</strong></p>
-            <span className="order-status cancelled">Cancelled</span>
-          </div>
-        </div>
-
-        <div className="order-item">
-          <div className="order-info">
-            <div className="order-img">
-              <FaBox />
-            </div>
-            <div>
-              <h4>#ORD-005</h4>
-              <p>Michael Brown • Water Bottle</p>
-              <span>08 Nov 2023</span>
-            </div>
-          </div>
-          <div>
-            <p><strong>$30</strong></p>
-            <span className="order-status delivered">Delivered</span>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );

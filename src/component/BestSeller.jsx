@@ -17,47 +17,47 @@ export default function BestSeller() {
   const navigate = useNavigate();
   /* ================= STATES ================= */
   const [products, setProducts] = useState([]);
-  
+
   const [loading, setLoading] = useState(false);
   const [selectedProcess, setSelectedProcess] = useState("best");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [productDetails, setProductDetails] = useState(null);
-  console.log('productDetails', productDetails);
+  console.log("productDetails", productDetails);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [product, setProduct] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(null);
 
+  const [selectedSizeId, setSelectedSizeId] = useState(null);
+  const [selectedColorId, setSelectedColorId] = useState(null);
+  console.log('selectedSizeId------', selectedSizeId);
+  console.log('selectedColorId------', selectedColorId);
   const buyNowProduct = useSelector((state) => state.buyNow);
 
-  console.log('buyNowProduct', buyNowProduct);
+  console.log("buyNowProduct", buyNowProduct);
 
-const handleBuyNow = () => {
-  if (!productDetails) return;
+  const handleBuyNow = () => {
+    if (!selectedVariant) return;
 
-  dispatch(
-    setBuyNowProduct({
-      id: productDetails.id,
-      name: productDetails.title,
-      price: Number(productDetails.Salesprice), // 🔥 sale price
-      quantity: quantity,
+    const selectedAttributes = getSelectedAttributeIds(selectedVariant);
+    console.log('selectedAttributes------------',selectedAttributes)
+    dispatch(
+      setBuyNowProduct({
+        product_id: productDetails.id,
+        variant_id: selectedVariant.variant_id,
+        attributes: selectedAttributes,
+        name: productDetails.title,
+        price: Number(selectedVariant.sale_price),
+        quantity,
+        image: selectedVariant.images?.[0] || selectedVariant.thumbnail || "",
+      }),
+    );
 
-      // 🔥 MOST IMPORTANT FIX (IMAGE)
-      image:
-        productDetails.images?.[0] || // main product image
-        productDetails.thumbnail ||
-        productDetails.image ||
-        "",
+    navigate("/checkout");
+  };
 
-      // (optional but future-safe)
-      rawImages: productDetails.images,
-    })
-  );
-
-  // 👉 checkout page
-  navigate("/checkout");
-};
 
   /* ================= DROPDOWN DATAello ================= */
   const processes = {
@@ -110,39 +110,47 @@ const handleBuyNow = () => {
     }
   };
 
-  const handleAddToCart = async (productId) => {
+  const handleAddToCart = async () => {
+    if (!selectedVariant) return;
+
     setShowModal(false);
     setIsOpen(true);
-
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    const selectedAttributes = getSelectedAttributeIds(selectedVariant);
 
     try {
       if (token) {
-        // 👉 Hit Add to Cart API
-        const res = await axios.post(
+        await axios.post(
           "http://tech-shop.techsaga.live/api/cart/add",
-          { product_id: productId },
+          {
+            product_id: productDetails.id,
+            variant_id: selectedVariant.variant_id,
+            variant_attribute_id: [selectedSizeId,selectedColorId],
+            quantity,
+          },
           {
             headers: {
               Authorization: `Bearer ${token}`,
+              Accept: "application/json",
             },
           },
         );
 
-        console.log("API add success", res.data);
-
-        await fetchCart(); // 👈 instant cart update
+        await fetchCart();
       } else {
-        // 👉 Guest user → Redux me add
         dispatch(
           addToCart({
             product_id: productDetails.id,
+            variant_id: selectedVariant.variant_id,
+            attributes: selectedAttributes,
             title: productDetails.title,
-            price: productDetails.price,
-            image: productDetails.images?.[0],
+            price: selectedVariant.sale_price,
+            image:
+              selectedVariant.images?.[0] || selectedVariant.thumbnail || "",
+            quantity,
           }),
         );
-        console.log("Redux add success");
       }
     } catch (error) {
       console.log("Add to cart failed", error);
@@ -175,41 +183,135 @@ const handleBuyNow = () => {
   const makeSlug = (text) => text?.toLowerCase().trim().replace(/\s+/g, "-");
 
   /* ================= PRODUCT DETAILS API (SLUG BASED) ================= */
-  const fetchProductDetails = async (product) => {
-    try {
-      setDetailsLoading(true);
+const fetchProductDetails = async (product) => {
+  try {
+    setDetailsLoading(true);
+    setQuantity(1);
 
-      // backend slug ho to use karo, warna title se banao
-      const slug = product.slug ? product.slug : makeSlug(product.title);
+    const slug = product?.slug
+      ? product.slug
+      : makeSlug(product?.title);
 
-      const res = await axios.get(
-        `http://tech-shop.techsaga.live/api/product-details/${slug}`,
+    const res = await axios.get(
+      `http://tech-shop.techsaga.live/api/product-details/${slug}`
+    );
+
+    const productData = res?.data?.product;
+
+    if (!productData) return;
+
+    setProductDetails(productData);
+    setCurrentImageIndex(0);
+    setShowModal(true);
+
+    // Default Variant Auto Select
+    if (productData?.variants?.length > 0) {
+            const defaultVariant = productData.variants[0]?.attributes[0]?.id;
+            console.log('defaultVariant----------------',defaultVariant)
+      // const defaultVariant = productData.variants[0];
+      setSelectedVariant(defaultVariant);
+
+      const firstColor = defaultVariant?.attributes?.find(
+        (a) => a.attribute_name?.toLowerCase() === "color"
       );
 
-      setProductDetails(res.data.product);
-      setCurrentImageIndex(0);
-      setShowModal(true);
-    } catch (error) {
-      console.error("Product Details Error:", error);
-      alert("Product details not found!");
-    } finally {
-      setDetailsLoading(false);
+      setSelectedColorId(firstColor?.id || null);
     }
-    console.log("hloo", product?.id);
-  };
+  } catch (error) {
+    console.error("Product Details Error:", error);
+  } finally {
+    setDetailsLoading(false);
+  }
+};
 
   /* ================= IMAGE SLIDER ================= */
-  const nextImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === productDetails.images.length - 1 ? 0 : prev + 1,
-    );
+  // const nextImage = () => {
+  //   setCurrentImageIndex((prev) =>
+  //     prev === productDetails.images.length - 1 ? 0 : prev + 1,
+  //   );
+  // };
+
+  // const prevImage = () => {
+  //   setCurrentImageIndex((prev) =>
+  //     prev === 0 ? productDetails.images.length - 1 : prev - 1,
+  //   );
+  // };
+
+ 
+
+  const getSelectedAttributeIds = (variant) => {
+    if (!variant?.attributes) return [];
+    return variant.attributes.map((attr) => ({
+      attribute_id: attr.id,
+      attribute_name: attr.attribute_name,
+      value: attr.value,
+    }));
   };
 
-  const prevImage = () => {
+
+  const getImages = () => {
+  if (selectedVariant?.images?.length > 0) {
+    return selectedVariant.images;
+  }
+  return productDetails?.images || [];
+};
+
+const nextImage = () => {
+  const images = getImages();
+  if (images.length === 0) return;
+
+  setCurrentImageIndex((prev) =>
+    prev === images.length - 1 ? 0 : prev + 1
+  );
+};
+
+const prevImage = () => {
+  const images = getImages();
+  if (images.length === 0) return;
+
+  setCurrentImageIndex((prev) =>
+    prev === 0 ? images.length - 1 : prev - 1
+  );
+};
+
+useEffect(() => {
+  if (!showModal) return;
+
+  const images =
+    selectedVariant?.images?.length > 0
+      ? selectedVariant.images
+      : productDetails?.images || [];
+
+  if (images.length <= 1) return;
+
+  const interval = setInterval(() => {
     setCurrentImageIndex((prev) =>
-      prev === 0 ? productDetails.images.length - 1 : prev - 1,
+      prev === images.length - 1 ? 0 : prev + 1
     );
-  };
+  }, 3000); // 3 seconds
+
+  return () => clearInterval(interval);
+}, [showModal, selectedVariant, productDetails]);
+
+useEffect(() => {
+  if (productDetails?.variants?.length > 0) {
+    const firstVariant = productDetails.variants[0];
+
+    setSelectedVariant(firstVariant);
+
+    const firstColor = firstVariant?.attributes?.find(
+      (a) => a.attribute_name?.toLowerCase() === "color"
+    );
+
+    setSelectedColorId(firstColor?.id || null);
+  }
+}, [productDetails]);
+
+console.log({
+  product_id: productDetails?.id,
+  variant_id: selectedVariant?.variant_id,
+  quantity,
+});
 
   /* ================= JSX ================= */
   return (
@@ -252,192 +354,279 @@ const handleBuyNow = () => {
         {/* PRODUCT LIST */}
         <div className="container-fluid px-5">
           <div className="ten-card gy-4">
-          {loading ? (
-  <p>Loading products...</p>
-) : (
-  products.map((product) => (
-    <div className="best-sellercard" key={product.id}>
-      <div
-  className="seller-card"
-  onClick={() => {
-    if (product?.stock_status === "outofstock") return;
-    navigate(`/product/${product.slug}`);
-  }}
-  style={{
-    cursor:
-      product?.stock_status === "outofstock" ? "not-allowed" : "pointer",
-    opacity: product?.stock_status === "outofstock" ? 0.6 : 1,
-  }}
->
+            {loading ? (
+              <p>Loading products...</p>
+            ) : (
+              products.map((product) => (
+                <div className="best-sellercard" key={product.id}>
+                  <div
+                    className="seller-card"
+                    onClick={() => {
+                      if (product?.stock_status === "outofstock") return;
+                      navigate(`/product/${product.slug}`);
+                    }}
+                    style={{
+                      cursor:
+                        product?.stock_status === "outofstock"
+                          ? "not-allowed"
+                          : "pointer",
+                      opacity: product?.stock_status === "outofstock" ? 0.6 : 1,
+                    }}
+                  >
+                    <img
+                      src={product.images?.[product.images?.length - 1]}
+                      alt={product.title}
+                    />
 
-        <img src={product.images?.[product.images?.length-1]} alt={product.title} />
+                    <h4>{product.title}</h4>
 
-        <h4>{product.title}</h4>
+                    <p>
+                      ₹{product.Salesprice}
+                      <del className="ps-2 text-muted">₹{product.price}</del>
+                    </p>
 
-        <p>
-          ₹{product.Salesprice}
-          <del className="ps-2 text-muted">₹{product.price}</del>
-        </p>
+                    <span className="discount">
+                      {product.discountPercentage}% OFF
+                    </span>
 
-        <span className="discount">
-          {product.discountPercentage}% OFF
-        </span>
+                    {product?.stock_status === "outofstock" && (
+                      <p className="text-danger fw-bold">Out of Stock</p>
+                    )}
 
-   {product?.stock_status === "outofstock" && (
-  <p className="text-danger fw-bold">Out of Stock</p>
-)}
-
-
-{/* <p className="text-danger fw-bold">{product.stock_status}</p>
+                    {/* <p className="text-danger fw-bold">{product.stock_status}</p>
     {product.stock_status === "Out of Stock" && (
   <p className="text-danger fw-bold">Out of Stock</p>
 )} */}
 
+                    <div className="btn-selectwish">
+                      <div className="whislist-icon">
+                        <button onClick={(e) => e.stopPropagation()}>
+                          <CiHeart />
+                        </button>
 
-        <div className="btn-selectwish">
-          <div className="whislist-icon">
-            <button onClick={(e) => e.stopPropagation()}>
-              <CiHeart />
-            </button>
+                        <button onClick={(e) => e.stopPropagation()}>
+                          <FaEye />
+                        </button>
+                      </div>
 
-            <button onClick={(e) => e.stopPropagation()}>
-              <FaEye />
-            </button>
-          </div>
-
-          <div className="select-option">
-           <button
-  disabled={product?.stock_status === "outofstock"}
-  style={{
-    opacity: product?.stock_status === "outofstock" ? 0.5 : 1,
-    cursor: product?.stock_status === "outofstock" ? "not-allowed" : "pointer",
-  }}
-  onClick={(e) => {
-    e.stopPropagation();
-    if (product?.stock_status === "outofstock") return;
-    fetchProductDetails(product);
-  }}
->
-  Select options
-</button>
-
-          </div>
-        </div>
-      </div>
-    </div>
-  ))
-)}
-
+                      <div className="select-option">
+                        <button
+                          disabled={product?.stock_status === "outofstock"}
+                          style={{
+                            opacity:
+                              product?.stock_status === "outofstock" ? 0.5 : 1,
+                            cursor:
+                              product?.stock_status === "outofstock"
+                                ? "not-allowed"
+                                : "pointer",
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (product?.stock_status === "outofstock") return;
+                            fetchProductDetails(product);
+                          }}
+                        >
+                          Select options
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
 
       {/* ================= MODAL ================= */}
       {showModal && productDetails && (
-        <div style={styles.overlay}>
-          <div style={styles.modal}>
-            <button
-              onClick={() => setShowModal(false)}
-              style={styles.closeButton}
-            >
-              ×
-            </button>
+  <div style={styles.overlay}>
+    <div style={styles.modal}>
+      <button
+        onClick={() => setShowModal(false)}
+        style={styles.closeButton}
+      >
+        ×
+      </button>
 
-            {detailsLoading ? (
-              <p>Loading product details...</p>
-            ) : (
-              <div style={styles.content}>
-                {/* LEFT */}
-                <div style={styles.imageSection}>
-                  <img
-                    src={productDetails.images?.[currentImageIndex]}
-                    alt={productDetails.title}
-                    style={styles.mainImage}
-                  />
+      {detailsLoading ? (
+        <p className="p-4">Loading...</p>
+      ) : (
+        <div style={styles.content}>
+          {/* LEFT IMAGE */}
+<div style={styles.imageSection}>
+  <div style={styles.mainImageContainer}>
+    <img
+      src={
+        (
+          selectedVariant?.images?.length > 0
+            ? selectedVariant.images
+            : productDetails?.images
+        )?.[currentImageIndex] || "https://via.placeholder.com/400"
+      }
+      alt={productDetails?.title}
+      style={styles.mainImage}
+    />
 
-                  {productDetails.images?.length > 1 && (
-                    <>
-                      <button onClick={prevImage} style={styles.navLeft}>
-                        <FaAngleLeft />
-                      </button>
-                      <button onClick={nextImage} style={styles.navRight}>
-                        <FaAngleRight />
-                      </button>
-                    </>
-                  )}
-                </div>
-                {/* RIGHT */}
-                <div style={styles.detailsSection}>
-                  <h2 className="productname">{productDetails.title}</h2>
-                  <p className="subproduct">{productDetails.description}</p>
+    {(
+      selectedVariant?.images?.length > 1 ||
+      productDetails?.images?.length > 1
+    ) && (
+      <>
+        <button onClick={prevImage} style={styles.navLeft}>
+          <FaAngleLeft />
+        </button>
 
-                  <p className="price-product">
-                    ₹{productDetails.Salesprice}
-                    <del className="ps-2">₹{productDetails.price}</del>
-                  </p>
+        <button onClick={nextImage} style={styles.navRight}>
+          <FaAngleRight />
+        </button>
+      </>
+    )}
+  </div>
+</div>
 
-                  <p>{productDetails.discountPercentage}% OFF</p>
-                  <p className="mt-3 mb-1">
-                    Status: {productDetails.availabilityStatus}
-                  </p>
+          {/* RIGHT DETAILS */}
+          <div style={styles.detailsSection}>
+            <h2>{productDetails?.title}</h2>
 
-                  <div
-                    className="quantity-controls mb-3"
-                    style={{ userSelect: "none" }}
-                  >
-                    <button
-                      type="button"
-                      onClick={handleDecrement}
-                      aria-label="Decrease quantity"
-                    >
-                      −
-                    </button>
-                    <input
-                      type="number"
-                      value={quantity}
-                      onChange={(e) => handleQuantityChange(e.target.value)}
-                      min="1"
-                      max="99"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleIncrement}
-                      aria-label="Increase quantity"
-                    >
-                      +
-                    </button>
-                  </div>
+            {/* DESCRIPTION */}
+            <p style={{ color: "#666" }}>
+              {productDetails?.description || "No description available"}
+            </p>
 
-                  <div className="mb-3">
-                    <button
-                      className="btn-add-to-cart"
-                      onClick={(e) => handleAddToCart(productDetails?.id)}
-                    >
-                      <i className="fas fa-shopping-cart me-2"></i> Add to cart
-                    </button>
-                    <button className="btn-shop-pay" onClick={handleBuyNow}>
-                      Buy Now
-                    </button>
+            {/* PRICE */}
+            <h4>
+              ₹{selectedVariant?.sale_price || productDetails?.Salesprice}
+              <del className="ps-2 text-muted">
+                ₹{selectedVariant?.price || productDetails?.price}
+              </del>
+            </h4>
 
-                    <div className="text-center mt-2">
-                      <a
-                        href="#"
-                        style={{
-                          fontSize: "0.85rem",
-                          textDecoration: "underline",
-                          color: "#111",
+            {/* SIZE */}
+            {productDetails?.variants?.length > 0 && (
+              <div className="my-3">
+                <label className="fw-bold">Size:</label>
+                <div className="d-flex gap-2 mt-2 flex-wrap">
+                  {productDetails.variants.map((variant) => {
+                    const sizeAttr = variant?.attributes?.find(
+                      (a) =>
+                        a.attribute_name?.toLowerCase() === "size"
+                    );
+
+                    if (!sizeAttr) return null;
+
+                    return (
+                      <button
+                        key={variant.variant_id}
+                        className={`btn ${
+                          selectedVariant?.variant_id ===
+                          variant.variant_id
+                            ? "btn-dark"
+                            : "btn-outline-dark"
+                        }`}
+                        onClick={() => {
+                          setSelectedVariant(variant);
+
+                          const firstColor =
+                            variant?.attributes?.find(
+                              (a) =>
+                                a.attribute_name?.toLowerCase() ===
+                                "size"
+                            );
+
+                          setSelectedSizeId(firstColor?.id);
                         }}
                       >
-                        More payment options
-                      </a>
-                    </div>
-                  </div>
+                        {sizeAttr?.value}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
+
+            {/* COLOR */}
+            {selectedVariant?.attributes?.some(
+              (a) =>
+                a.attribute_name?.toLowerCase() === "color"
+            ) && (
+              <div className="my-3">
+                <label className="fw-bold">Color:</label>
+                <div className="d-flex gap-3 mt-2">
+                  {selectedVariant.attributes
+                    .filter(
+                      (a) =>
+                        a.attribute_name?.toLowerCase() ===
+                        "color"
+                    )
+                    .map((colorAttr) => (
+                      <div
+                        key={colorAttr.id}
+                        onClick={() =>
+                          setSelectedColorId(colorAttr.id)
+                        }
+                        style={{
+                          width: "35px",
+                          height: "35px",
+                          borderRadius: "50%",
+                          backgroundColor:
+                            colorAttr?.value?.toLowerCase(),
+                          cursor: "pointer",
+                          border:
+                            selectedColorId === colorAttr.id
+                              ? "3px solid black"
+                              : "1px solid #ccc",
+                        }}
+                      />
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* QUANTITY */}
+            <div className="quantity-controls my-3 my-3">
+              <button
+                className="btn btn-outline-dark"
+                onClick={handleDecrement}
+              >
+                -
+              </button>
+
+              <input
+                type="number"
+                value={quantity}
+                readOnly
+                style={{ textAlign: "center" }}
+              />
+
+              <button
+                className="btn btn-outline-dark"
+                onClick={handleIncrement}
+              >
+                +
+              </button>
+            </div>
+
+            {/* BUTTONS */}
+            <button
+              className="btn-add-to-cart"
+             onClick={(e) => handleAddToCart(productDetails?.id)}
+            >
+              Add to Cart
+            </button>
+
+            <button
+              className="btn-shop-pay"
+              onClick={handleBuyNow}
+            >
+              Buy Now
+            </button>
           </div>
         </div>
       )}
+    </div>
+  </div>
+)}
       <Addcart open={isOpen} close={(e) => setIsOpen(false)} />
     </>
   );
@@ -509,7 +698,7 @@ const styles = {
 
   navLeft: {
     position: "absolute",
-    left: "15px",
+    left: "0px",
     top: "50%",
     transform: "translateY(-50%)",
     background: "rgba(0,0,0,0.5)",
@@ -524,7 +713,7 @@ const styles = {
 
   navRight: {
     position: "absolute",
-    left: "46%",
+    left: "88%",
     top: "50%",
     transform: "translateY(-50%)",
     background: "rgba(0,0,0,0.5)",

@@ -17,29 +17,75 @@ export default function Alldetail() {
   const { token } = useContext(AuthContext);
 
   const [product, setProduct] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(null);
+
+  console.log('selectedVariant', selectedVariant);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedSizeId, setSelectedSizeId] = useState(null);
+const [selectedColorId, setSelectedColorId] = useState(null);
+  /* ================= HELPER: GET ATTRIBUTE IDS ================= */
+ 
+
+  /* ================= COLOR VARIANTS ================= */
+const colorVariants = product?.variants?.filter((v) =>
+  v.attributes?.some(
+    (a) => a.attribute_name.toLowerCase() === "color"
+  )
+) || [];
 
   /* ================= FETCH PRODUCT ================= */
-  const fetchProduct = async () => {
-    try {
-      const res = await getProductById(id);
-      setProduct(res.product);
-    } catch (err) {
-      console.error("Product fetch error:", err);
+const fetchProduct = async () => {
+  try {
+    const response = await getProductById(id); // 👈 res ki jagah response use karo
+    const productData = response.product;
+
+    setProduct(productData);
+
+    if (productData?.variants?.length > 0) {
+      const defaultVariant = productData.variants[0];
+      setSelectedVariant(defaultVariant);
+
+      const sizeAttr = defaultVariant.attributes.find(
+        (a) => a.attribute_name.toLowerCase() === "size"
+      );
+
+      const colorAttr = defaultVariant.attributes.find(
+        (a) => a.attribute_name.toLowerCase() === "color"
+      );
+
+      setSelectedSizeId(sizeAttr?.id || null);
+      setSelectedColorId(colorAttr?.id || null);
     }
-  };
+  } catch (error) {
+    console.error("Product fetch error:", error);
+  }
+};
 
   useEffect(() => {
     fetchProduct();
   }, [id]);
 
-  /* ================= IMAGE SLIDER ================= */
-  const images = product?.images?.length
-    ? product.images
-    : [product?.thumbnail];
+  /* ================= LOG DEFAULT / CLICKED VARIANT ================= */
+  // useEffect(() => {
+  //   if (!selectedVariant) return;
 
+  //   console.log("✅ Selected Variant:", {
+  //     variant_id: selectedVariant.variant_id,
+  //     attributes: getSelectedAttributeIds(selectedVariant),
+  //   });
+  // }, [selectedVariant]);
+
+  /* ================= VARIANT IMAGES ================= */
+  const images =
+    selectedVariant?.images?.length > 0
+      ? selectedVariant.images
+      : selectedVariant?.thumbnail
+      ? [selectedVariant.thumbnail]
+      : [];
+
+  /* ================= IMAGE SLIDER ================= */
   const handlePrevImage = () => {
     setCurrentImageIndex((prev) =>
       prev === 0 ? images.length - 1 : prev - 1
@@ -52,24 +98,9 @@ export default function Alldetail() {
     );
   };
 
-  /* ================= BUY NOW ================= */
-  const handleBuyNow = () => {
-    dispatch(
-      setBuyNowProduct({
-        id: product.id,
-        name: product.title,
-        price: Number(product.Salesprice),
-        quantity: quantity,
-        image: product.images?.[0] || product.thumbnail || "",
-      })
-    );
-
-    navigate("/checkout");
-  };
-
   /* ================= AUTO SLIDE ================= */
   useEffect(() => {
-    if (!images?.length) return;
+    if (!images.length) return;
     const interval = setInterval(handleNextImage, 5000);
     return () => clearInterval(interval);
   }, [images]);
@@ -87,11 +118,19 @@ export default function Alldetail() {
         hoverBoundingBox: true,
       });
     }
-  }, [currentImageIndex]);
+  }, [currentImageIndex, selectedVariant]);
 
-  if (!product) return <div className="text-center py-5">Loading...</div>;
+  if (!product || !selectedVariant)
+  return <div className="text-center py-5">Loading...</div>;
 
-  /* ================= CART ================= */
+  /* ================= SIZE VARIANTS ================= */
+  const sizeVariants = product.variants.filter((v) =>
+    v.attributes?.some(
+      (a) => a.attribute_name.toLowerCase() === "size"
+    )
+  );
+
+  /* ================= FETCH CART ================= */
   const fetchCart = async () => {
     try {
       const res = await axios.post(
@@ -110,41 +149,62 @@ export default function Alldetail() {
     }
   };
 
-  const handleAddToCart = async () => {
-    setIsOpen(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  /* ================= ADD TO CART ================= */
+const handleAddToCart = async () => {
+  setIsOpen(true);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 
-    try {
-      if (token) {
-        await axios.post(
-          "http://tech-shop.techsaga.live/api/cart/add",
-          {
-            product_id: product.id,
-            quantity: quantity,
+  try {
+    if (token) {
+      await axios.post(
+        "http://tech-shop.techsaga.live/api/cart/add",
+        {
+          product_id: product.id,
+          variant_id: selectedVariant.variant_id,
+          variant_attribute_id: [selectedSizeId, selectedColorId],
+          quantity,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
           },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: "application/json",
-            },
-          }
-        );
-        await fetchCart();
-      } else {
-        dispatch(
-          addToCart({
-            product_id: product.id,
-            title: product.title,
-            price: product.price,
-            image: product.images?.[0],
-            quantity: quantity,
-          })
-        );
-      }
-    } catch (error) {
-      console.log("Add to cart failed", error);
+        }
+      );
+
+      await fetchCart();
+    } else {
+      dispatch(
+        addToCart({
+          product_id: product.id,
+          variant_id: selectedVariant.variant_id,
+          title: product.title,
+          price: selectedVariant.sale_price,
+          image: images[0],
+          quantity,
+        })
+      );
     }
-  };
+  } catch (error) {
+    console.log("Add to cart failed", error);
+  }
+};
+  /* ================= BUY NOW ================= */
+const handleBuyNow = () => {
+  dispatch(
+    setBuyNowProduct({
+      product_id: product.id,
+      variant_id: selectedVariant.variant_id,
+      variant_attribute_id: [selectedSizeId, selectedColorId],
+      name: product.title,
+      price: Number(selectedVariant.sale_price),
+      quantity,
+      image: images[0],
+    })
+  );
+
+  navigate("/checkout");
+};
 
   return (
     <div className="container my-4">
@@ -152,7 +212,10 @@ export default function Alldetail() {
         {/* LEFT */}
         <div className="col-md-6 position-relative">
           <div className="main-image-container">
-            <button className="nav-arrow nav-arrow-left" onClick={handlePrevImage}>
+            <button
+              className="nav-arrow nav-arrow-left"
+              onClick={handlePrevImage}
+            >
               &#10094;
             </button>
 
@@ -163,7 +226,10 @@ export default function Alldetail() {
               alt={product.title}
             />
 
-            <button className="nav-arrow nav-arrow-right" onClick={handleNextImage}>
+            <button
+              className="nav-arrow nav-arrow-right"
+              onClick={handleNextImage}
+            >
               &#10095;
             </button>
           </div>
@@ -189,28 +255,143 @@ export default function Alldetail() {
           <p className="text-muted">{product.category}</p>
 
           <div className="price">
-            ₹{product.Salesprice}
-            <span className="original-price ms-2">₹{product.price}</span>
+            ₹{selectedVariant.sale_price}
+            <span className="original-price ms-2">
+              ₹{selectedVariant.price}
+            </span>
             <span className="discount-badge ms-2">
-              {product.discountPercentage}% OFF
+              {selectedVariant.discountPercentage}% OFF
             </span>
           </div>
+
+          {/* SIZE SELECT */}
+         {/* SIZE SELECT */}
+{sizeVariants.length > 0 && (
+  <div className="my-3">
+    <label className="fw-bold">Size:</label>
+    <div className="d-flex gap-2 mt-2">
+      {sizeVariants.map((variant) => {
+        const sizeAttr = variant.attributes.find(
+          (a) => a.attribute_name.toLowerCase() === "size"
+        );
+
+        return (
+          <button
+            key={variant.variant_id}
+            className={`btn ${
+              selectedVariant.variant_id ===
+              variant.variant_id
+                ? "btn-dark"
+                : "btn-outline-dark"
+            }`}
+        onClick={() => {
+  setSelectedVariant(variant);
+  setCurrentImageIndex(0);
+
+  const sizeAttr = variant.attributes.find(
+    (a) => a.attribute_name.toLowerCase() === "size"
+  );
+
+  const colorAttr = variant.attributes.find(
+    (a) => a.attribute_name.toLowerCase() === "color"
+  );
+
+  setSelectedSizeId(sizeAttr?.id || null);
+  setSelectedColorId(colorAttr?.id || null);
+}}
+          >
+            {sizeAttr?.value}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+)}
+
+{/* COLOR SELECT */}
+{selectedVariant?.attributes?.filter(
+  (a) => a.attribute_name.toLowerCase() === "color"
+).length > 0 && (
+  <div className="my-3">
+    <label className="fw-bold">Color:</label>
+    <div className="d-flex gap-3 mt-2">
+      {selectedVariant.attributes
+        .filter(
+          (a) => a.attribute_name.toLowerCase() === "color"
+        )
+        .map((colorAttr) => (
+          <div
+            key={colorAttr.id}
+            onClick={() => {
+  setSelectedColorId(colorAttr.id);
+
+  const matchedVariant = product.variants.find((v) =>
+    v.attributes.some(
+      (a) =>
+        a.attribute_name.toLowerCase() === "color" &&
+        a.id === colorAttr.id
+    )
+  );
+
+  if (matchedVariant) {
+    setSelectedVariant(matchedVariant);
+
+    const sizeAttr = matchedVariant.attributes.find(
+      (a) => a.attribute_name.toLowerCase() === "size"
+    );
+
+    setSelectedSizeId(sizeAttr?.id || null);
+  }
+}}
+            style={{
+              width: "35px",
+              height: "35px",
+              borderRadius: "50%",
+              backgroundColor: colorAttr.value.toLowerCase(),
+              cursor: "pointer",
+              border:
+                selectedColorId === colorAttr.id
+                  ? "3px solid black"
+                  : "1px solid #ccc",
+              transform:
+                selectedColorId === colorAttr.id
+                  ? "scale(1.1)"
+                  : "scale(1)",
+              transition: "0.2s",
+            }}
+          />
+        ))}
+    </div>
+  </div>
+)}
 
           <p className="mt-3">{product.description}</p>
 
           <div className="quantity-controls my-3">
-            <button onClick={() => quantity > 1 && setQuantity(quantity - 1)}>
+            <button
+              onClick={() =>
+                quantity > 1 && setQuantity(quantity - 1)
+              }
+            >
               −
             </button>
             <input value={quantity} readOnly />
-            <button onClick={() => setQuantity(quantity + 1)}>+</button>
+            <button onClick={() => setQuantity(quantity + 1)}>
+              +
+            </button>
           </div>
 
-          <button className="btn-add-to-cart" onClick={handleAddToCart}>
+          <button
+            className="btn-add-to-cart"
+            onClick={handleAddToCart}
+          >
             Add to Cart
           </button>
 
-          <button className="btn-shop-pay" onClick={handleBuyNow}>
+          <button
+            className="btn-shop-pay"
+            onClick={handleBuyNow}
+          >
             Buy Now
           </button>
         </div>

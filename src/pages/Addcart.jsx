@@ -14,7 +14,7 @@ export default function Addcart({ open, close }) {
   // console.log("cartData", cartData);
 
   const [cartList, setCartList] = useState([]);
-  // console.log("cartData", cartData);
+ 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -38,21 +38,10 @@ export default function Addcart({ open, close }) {
     return `${minutes}m ${seconds}s`;
   };
 
-  // const handleIncrease = (item) => {
-  //   dispatch(addToCart(item));
-  // };
 
-  // const handleDecrease = (id) => {
-  //   dispatch(decreaseQty(id));
-  // };
 
   const cartItems = useSelector((state) => state.cart.cart);
-  // const subtotal = useSelector((state) =>
-  //   state.cart.cart.reduce(
-  //     (total, item) => total + item.price * item.quantity,
-  //     0
-  //   )
-  // );
+ 
 
   const apiSubtotal =
     cartData?.reduce(
@@ -94,64 +83,80 @@ export default function Addcart({ open, close }) {
     fetchCart();
   }, []);
 
-  const removeCartItem = async (cartId) => {
-    if (!token) {
-      alert("Please login first");
-      return;
-    }
+const removeCartItem = async (item) => {
+  // if (!token) {
+  //   dispatch(removeFromCart(item.product_id));
+  //   return;
+  // }
 
-    try {
-      const formData = new FormData();
-      formData.append("cart_id", cartId);
+  try {
+    const formData = new FormData();
 
-      await axios.post(
-        "http://tech-shop.techsaga.live/api/cart/remove",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+    // safest way
+    const cartId = item.cart_id || item.id;
 
-      fetchCart(); // 🔁 cart refresh
-    } catch (error) {
-      console.log("Remove error:", error.response?.data || error.message);
-    }
-  };
+    formData.append("cart_id", cartId);
 
+    await axios.post(
+      "http://tech-shop.techsaga.live/api/cart/remove",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    );
+
+    fetchCart();
+  } catch (error) {
+    console.log("Remove error:", error.response?.data || error);
+  }
+};
   // ======================
   // UPDATE QUANTITY
   // ======================
-  const updateCartQuantity = async (ProductId, quantity) => {
-    if (quantity < 1) return;
+const updateCartQuantity = async (item, newQty) => {
+  if (newQty < 1) return;
 
-    try {
-      const formData = new FormData();
-      formData.append("product_id", ProductId);
-      formData.append("quantity", quantity);
+  try {
+    const formData = new FormData();
+    const cartId = item.cart_id || item.id;
 
-      await axios.post(
-        "http://tech-shop.techsaga.live/api/cart/update",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+    formData.append("cart_id", cartId);
+    formData.append("quantity", newQty);
 
-      fetchCart(); // refresh list
-    } catch (err) {
-      console.log("Update error:", err.response?.data || err);
-    }
-  };
+    const res = await axios.post(
+      "http://tech-shop.techsaga.live/api/cart/update",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    );
 
-  // ======================
-  // BUTTON HANDLERS
-  // ======================
+    const updatedQty = Number(res.data.data.quantity);
+
+    // 🔥 IMPORTANT FIX
+    dispatch(
+      setCartFromApi(
+        cartItems.map((c) =>
+          (c.cart_id || c.id) === cartId
+            ? {
+                ...c,
+                quantity: updatedQty,
+              }
+            : c
+        )
+      )
+    );
+  } catch (err) {
+    console.log("Update error:", err.response?.data || err);
+  }
+};
+ 
   const handleIncrease = (item) => {
     dispatch(addToCart(item));
   };
@@ -161,9 +166,7 @@ export default function Addcart({ open, close }) {
     dispatch(decreaseQty(id));
   };
 
-  // useEffect(() => {
-  //   if (token) fetchCartItems();
-  // }, [token]);
+
 
   return (
     <>
@@ -175,7 +178,6 @@ export default function Addcart({ open, close }) {
           open ? "d-block" : "d-none"
         }`}
       >
-        {/* Header */}
         <div className="cart-header">
           <div className="d-flex justify-content-between align-items-center">
             <h5 className="mb-0">
@@ -217,9 +219,8 @@ export default function Addcart({ open, close }) {
           </div>
         </div>
 
-        {/* Body */}
+       
         <div className="cart-body">
-          {/* Cart Item */}
           {cartItems?.map((item, index) => (
             <div className="cart-item" key={item.id}>
               <div className="d-flex gap-3">
@@ -237,16 +238,13 @@ export default function Addcart({ open, close }) {
                     <button
                       className="btn btn-outline-secondary"
                       disabled={item.quantity <= 1}
-                      onClick={() => {
-                        if (token) {
-                          updateCartQuantity(
-                            item.product_id,
-                            item.quantity - 1
-                          );
-                        } else {
-                          handleDecrease(item.product_id);
-                        }
-                      }}
+                    onClick={() => {
+  if (token) {
+    updateCartQuantity(item, item.quantity - 1);
+  } else {
+    handleDecrease(item.product_id);
+  }
+}}
                     >
                       −
                     </button>
@@ -261,74 +259,31 @@ export default function Addcart({ open, close }) {
 
                     <button
                       className="btn btn-outline-secondary"
-                      onClick={() => {
-                        if (token) {
-                          updateCartQuantity(
-                            item.product_id,
-                            item.quantity + 1
-                          );
-                        } else {
-                          handleIncrease(item);
-                        }
-                      }}
+                     onClick={() => {
+  if (token) {
+    updateCartQuantity(item, item.quantity + 1);
+  } else {
+    handleIncrease(item);
+  }
+}}
                      
                     >
                       +
                     </button>
                   </div>
 
-                  <button
-                    className="remove-btn mt-2"
-                    onClick={() => removeCartItem(item.id)}
-                  >
-                    🗑 Remove
-                  </button>
+                <button
+  className="remove-btn mt-2"
+  onClick={() => removeCartItem(item)}
+>
+  🗑 Remove
+</button>
                 </div>
               </div>
             </div>
           ))}
 
-          {/* Recommendation */}
-          {/* <div className="recommendation-section">
-            <div className="recommendation-header">
-              <h6 className="mb-0">
-                <strong>Frequently bought together</strong>
-              </h6>
-              <span className="discount-badge">10% OFF</span>
-            </div>
-
-            <div className="d-flex align-items-center mb-3">
-              <i className="fas fa-check-circle text-success me-2"></i>
-              <p className="mb-0 small">
-                Add both to cart and get <strong>10% OFF</strong> on each
-                product
-              </p>
-            </div>
-
-
-            <div className="d-flex justify-content-between align-items-center mt-2 colo-sel">
-              <Form.Select aria-label="Default select example">
-                <option value="1">Black</option>
-                <option value="2">Red</option>
-                <option value="3">Three</option>
-              </Form.Select>
-              <button type="button" className="btn-add">
-                Add to Cart
-              </button>
-            </div>
-
-            <div className="carousel-controls">
-              <small className="text-muted me-auto">1/3</small>
-              <button type="button" className="carousel-btn">
-                &lt;
-              </button>
-              <button type="button" className="carousel-btn">
-                &gt;
-              </button>
-            </div>
-          </div> */}
-
-          {/* Action Buttons */}
+      
           <div className="action-buttons">
             <button type="button" className="action-btn">
               <i className="fas fa-pencil-alt"></i> Note

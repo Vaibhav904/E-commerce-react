@@ -3,6 +3,7 @@ import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import Form from "react-bootstrap/Form";
 import { Spinner } from "react-bootstrap";
 
 export default function ProductEdit() {
@@ -12,164 +13,211 @@ export default function ProductEdit() {
 
   const [loading, setLoading] = useState(true);
 
+  /* ================= BASIC ================= */
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [isVariant, setIsVariant] = useState(false);
+
   /* ================= CATEGORY ================= */
   const [categories, setCategories] = useState([]);
+  const [attributes, setAttributes] = useState([]);
   const [parentCategory, setParentCategory] = useState("");
   const [childCategory, setChildCategory] = useState("");
 
-  /* ================= PRODUCT ================= */
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    product_status: "published",
-    is_variant: 1,
-  });
-
-  /* ================= VARIANT ================= */
-  const [variant, setVariant] = useState({
+  /* ================= VARIANTS ================= */
+  const createDefaultVariant = () => ({
+    id: null,
     sku: "",
     base_price: "",
     discount: "",
     stock: "",
     weight: "",
     dimensions: "",
+    images: [],
+    oldImages: [],
+    attr: {
+      size: "",
+      color: [""], // ✅ array
+    },
   });
 
-  const [oldImages, setOldImages] = useState([]);
-  const [newImages, setNewImages] = useState([]);
+  const [variants, setVariants] = useState([createDefaultVariant()]);
 
-  /* ================= LOAD DATA ================= */
+  /* ================= LOAD ================= */
   useEffect(() => {
     const loadData = async () => {
       await fetchCategories();
       await fetchProduct();
       setLoading(false);
     };
-
     loadData();
   }, []);
 
-  /* ================= FETCH CATEGORIES ================= */
+  /* ================= FETCH CATEGORY ================= */
   const fetchCategories = async () => {
-    try {
-      const res = await axios.get(
-        "http://tech-shop.techsaga.live/api/v1/category/categoryListing",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setCategories(res.data.data || []);
-    } catch (error) {
-      console.error("Category Fetch Error:", error);
-    }
+    const res = await axios.get(
+      "http://tech-shop.techsaga.live/api/v1/category/categoryListing",
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setCategories(res.data.data || []);
+    setAttributes(res.data.attributes || []);
   };
 
   /* ================= FETCH PRODUCT ================= */
   const fetchProduct = async () => {
-    try {
-      const res = await axios.post(
-        "http://tech-shop.techsaga.live/api/v1/products/show",
-        { product_id: Number(id) },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const p = res.data.data;
-
-      /* PRODUCT */
-      setForm({
-        name: p.name || "",
-        description: p.description || "",
-        product_status: p.product_status || "published",
-        is_variant: p.is_variant || 1,
-      });
-
-      /* CATEGORY */
-      if (p.category?.sub) {
-        setParentCategory(String(p.category.main.id));
-        setChildCategory(String(p.category.sub.id));
-      } else {
-        setParentCategory(String(p.category?.main?.id || ""));
+    const res = await axios.post(
+      "http://tech-shop.techsaga.live/api/v1/products/show",
+      { product_id: Number(id) },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       }
+    );
 
-      /* VARIANT */
-      if (p.variants && p.variants.length > 0) {
-        const v = p.variants[0];
+    const p = res.data.data;
 
-        setVariant({
+    setName(p.name || "");
+    setDescription(p.description || "");
+    setIsVariant(p.is_variant == 1);
+
+    if (p.category?.sub) {
+      setParentCategory(String(p.category.main.id));
+      setChildCategory(String(p.category.sub.id));
+    } else {
+      setParentCategory(String(p.category?.main?.id || ""));
+    }
+
+    if (p.variants?.length > 0) {
+      const mapped = p.variants.map((v) => {
+        let sizeId = "";
+        let colorIds = [];
+
+        v.attributes?.forEach((attr) => {
+          if (attr.name?.toLowerCase() === "size") {
+            sizeId = String(attr.value_id);
+          }
+          if (attr.name?.toLowerCase() === "color") {
+            colorIds.push(String(attr.value_id));
+          }
+        });
+
+        return {
+          id: v.id,
           sku: v.sku || "",
-          base_price: v.base_price || v.price || "",
+          base_price: v.price || "",
           discount: v.discount || "",
           stock: v.stock || "",
           weight: v.weight || "",
           dimensions: v.dimensions || "",
-        });
+          images: [],
+          oldImages: v.image || [],
+          attr: {
+            size: sizeId,
+            color: colorIds.length ? colorIds : [""],
+          },
+        };
+      });
 
-        setOldImages(v.images || []);
-      }
-    } catch (error) {
-      console.error("Product Fetch Error:", error);
+      setVariants(mapped);
     }
   };
 
   /* ================= HANDLERS ================= */
-  const handleFormChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleVariantChange = (index, field, value) => {
+    const updated = [...variants];
+    updated[index][field] = value;
+    setVariants(updated);
   };
 
-  const handleVariantChange = (e) => {
-    setVariant({ ...variant, [e.target.name]: e.target.value });
+  const handleAttrChange = (index, field, value) => {
+    const updated = [...variants];
+    updated[index].attr[field] = value;
+    setVariants(updated);
   };
 
-  const handleImageChange = (e) => {
-    setNewImages([...e.target.files]);
+  const handleColorChange = (variantIndex, colorIndex, value) => {
+    const updated = [...variants];
+    updated[variantIndex].attr.color =
+      updated[variantIndex].attr.color.map((c, i) =>
+        i === colorIndex ? value : c
+      );
+    setVariants(updated);
   };
 
-  /* ================= CATEGORY FILTER ================= */
-  const parentCategories = categories.filter((c) => c.parent === 0);
-  const childCategories = categories.filter(
-    (c) => String(c.parent) === String(parentCategory)
-  );
+  const addColorField = (variantIndex) => {
+    const updated = [...variants];
+    updated[variantIndex].attr.color.push("");
+    setVariants(updated);
+  };
+
+  const removeColorField = (variantIndex, colorIndex) => {
+    const updated = [...variants];
+    updated[variantIndex].attr.color.splice(colorIndex, 1);
+    setVariants(updated);
+  };
+
+  const handleImages = (index, files) => {
+    const updated = [...variants];
+    updated[index].images = [...files];
+    setVariants(updated);
+  };
+
+  const addVariant = () => {
+    setVariants([...variants, createDefaultVariant()]);
+  };
+
+  /* ================= DELETE IMAGE ================= */
+
+  const deleteVariantImage = async (imageId, variantIndex) => {
+    await axios.post(
+      "http://tech-shop.techsaga.live/api/v1/products/variant-image/delete",
+      { image_id: imageId },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    const updated = [...variants];
+    updated[variantIndex].oldImages =
+      updated[variantIndex].oldImages.filter((img) => img.id !== imageId);
+
+    setVariants(updated);
+  };
 
   /* ================= SUBMIT ================= */
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const fd = new FormData();
+    const formData = new FormData();
 
-    fd.append("product_id", Number(id));
-    fd.append("name", form.name);
-    fd.append("description", form.description);
-    fd.append("product_status", form.product_status);
-    fd.append("is_variant", form.is_variant);
+    formData.append("id", id);
+    formData.append("name", name);
+    formData.append("description", description);
 
-    fd.append(
+    formData.append(
       "category_id",
       childCategory ? Number(childCategory) : Number(parentCategory)
     );
 
-    fd.append("variants[0][sku]", variant.sku);
-    fd.append("variants[0][base_price]", variant.base_price);
-    fd.append("variants[0][discount]", variant.discount);
-    fd.append("variants[0][stock]", variant.stock);
-    fd.append("variants[0][weight]", variant.weight);
-    fd.append("variants[0][dimensions]", variant.dimensions);
+    formData.append("is_variant", isVariant ? 1 : 0);
 
-    newImages.forEach((img) => {
-      fd.append("variant_images[0][]", img);
-    });
+  variants.forEach((v, i) => {
+  if (v.id) formData.append(`variants[${i}][id]`, v.id);
+
+  formData.append(`variants[${i}][sku]`, v.sku || "");
+  formData.append(`variants[${i}][price]`, v.base_price || 0);  // ✅ FIX
+  formData.append(`variants[${i}][discount]`, v.discount || 0);
+  formData.append(`variants[${i}][stock]`, v.stock || 0);
+  formData.append(`variants[${i}][weight]`, v.weight || "");
+  formData.append(`variants[${i}][dimensions]`, v.dimensions || "");
+});
 
     try {
       await axios.post(
         "http://tech-shop.techsaga.live/api/v1/products/update",
-        fd,
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -181,7 +229,7 @@ export default function ProductEdit() {
       alert("Product Updated Successfully ✅");
       navigate("/adminproducts");
     } catch (error) {
-      console.error(error.response?.data || error);
+      console.log(error.response?.data);
       alert("Update Failed ❌");
     }
   };
@@ -194,143 +242,148 @@ export default function ProductEdit() {
     );
   }
 
+  const parentCategories = categories.filter((c) => c.parent === 0);
+  const childCategories = categories.filter(
+    (c) => String(c.parent) === String(parentCategory)
+  );
+
+  const sizeAttribute = attributes.find(
+    (a) => a.name?.toLowerCase() === "size"
+  );
+
+  const colorAttribute = attributes.find(
+    (a) => a.name?.toLowerCase() === "color"
+  );
+
   return (
     <div className="d-flex">
       <AdminSidebar />
       <div className="dash-header w-100">
         <AdminHeader />
-
         <div className="container mt-4">
           <h2>Edit Product</h2>
 
-       <form onSubmit={handleSubmit} className="bg-white p-4 shadow rounded">
+          <form onSubmit={handleSubmit} className="bg-white p-4 shadow rounded">
+            <input
+              className="form-control mb-3"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Product Name"
+            />
+            
 
-  {/* PRODUCT NAME */}
-  <label className="form-label">Product Name</label>
-  <input
-    className="form-control mb-3"
-    name="name"
-    value={form.name}
-    onChange={handleFormChange}
-    placeholder="Product Name"
-    required
-  />
+            <select
+              className="form-control mb-3"
+              value={parentCategory}
+              onChange={(e) => {
+                setParentCategory(e.target.value);
+                setChildCategory("");
+              }}
+            >
+              <option value="">Parent Category</option>
+              {parentCategories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.category_name}
+                </option>
+              ))}
+            </select>
 
-  {/* CATEGORY */}
-  <label className="form-label">Parent Category</label>
-  <select
-    className="form-control mb-3"
-    value={parentCategory}
-    onChange={(e) => {
-      setParentCategory(e.target.value);
-      setChildCategory("");
-    }}
-  >
-    <option value="">Select Parent Category</option>
-    {parentCategories.map((c) => (
-      <option key={c.id} value={c.id}>
-        {c.category_name}
-      </option>
-    ))}
-  </select>
+            <select
+              className="form-control mb-3"
+              value={childCategory}
+              onChange={(e) => setChildCategory(e.target.value)}
+              disabled={!parentCategory}
+            >
+              <option value="">Child Category</option>
+              {childCategories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.category_name}
+                </option>
+              ))}
+            </select>
 
-  <label className="form-label">Child Category</label>
-  <select
-    className="form-control mb-3"
-    value={childCategory}
-    onChange={(e) => setChildCategory(e.target.value)}
-    disabled={!parentCategory}
-  >
-    <option value="">Select Child Category</option>
-    {childCategories.map((c) => (
-      <option key={c.id} value={c.id}>
-        {c.category_name}
-      </option>
-    ))}
-  </select>
+            <textarea
+              className="form-control mb-3"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Description"
+            />
 
-  {/* DESCRIPTION */}
-  <label className="form-label">Description</label>
-  <textarea
-    className="form-control mb-3"
-    name="description"
-    value={form.description}
-    onChange={handleFormChange}
-    placeholder="Description"
-  />
+            {variants.map((v, i) => (
+              <div key={i} className="border p-3 mb-3 rounded">
+                <input
+                  className="form-control mb-2"
+                  value={v.sku}
+                  onChange={(e) =>
+                    handleVariantChange(i, "sku", e.target.value)
+                  }
+                  placeholder="SKU"
+                />
 
-  {/* VARIANT */}
-  <h5 className="mt-3">Variant</h5>
+                <Form.Select
+                  value={v.attr.size}
+                  onChange={(e) =>
+                    handleAttrChange(i, "size", e.target.value)
+                  }
+                  className="mb-2"
+                >
+                  <option value="">Select Size</option>
+                  {sizeAttribute?.values?.map((val) => (
+                    <option key={val.id} value={String(val.id)}>
+                      {val.value}
+                    </option>
+                  ))}
+                </Form.Select>
 
-  <label className="form-label">SKU</label>
-  <input
-    className="form-control mb-2"
-    name="sku"
-    value={variant.sku}
-    onChange={handleVariantChange}
-    placeholder="SKU"
-  />
+                {v.attr.color.map((colorValue, colorIndex) => (
+                  <div key={colorIndex} className="d-flex mb-2 gap-2">
+                    <Form.Select
+                      value={colorValue}
+                      onChange={(e) =>
+                        handleColorChange(i, colorIndex, e.target.value)
+                      }
+                    >
+                      <option value="">Select Color</option>
+                      {colorAttribute?.values?.map((val) => (
+                        <option key={val.id} value={String(val.id)}>
+                          {val.value}
+                        </option>
+                      ))}
+                    </Form.Select>
 
-  <label className="form-label">Price</label>
-  <input
-    className="form-control mb-2"
-    name="base_price"
-    value={variant.base_price}
-    onChange={handleVariantChange}
-    placeholder="Price"
-  />
+                    {v.attr.color.length > 1 && (
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={() => removeColorField(i, colorIndex)}
+                      >
+                        X
+                      </button>
+                    )}
+                  </div>
+                ))}
 
-  <label className="form-label">Discount</label>
-  <input
-    className="form-control mb-2"
-    name="discount"
-    value={variant.discount}
-    onChange={handleVariantChange}
-    placeholder="Discount"
-  />
+                <button
+                  type="button"
+                  className="btn btn-sm btn-secondary mb-2"
+                  onClick={() => addColorField(i)}
+                >
+                  + Add Color
+                </button>
 
-  <label className="form-label">Stock</label>
-  <input
-    className="form-control mb-2"
-    name="stock"
-    value={variant.stock}
-    onChange={handleVariantChange}
-    placeholder="Stock"
-  />
+                <input
+                  type="file"
+                  multiple
+                  className="form-control"
+                  onChange={(e) => handleImages(i, e.target.files)}
+                />
+              </div>
+            ))}
 
-  {/* IMAGES */}
-  <label className="form-label">Product Images</label>
-  <input
-    type="file"
-    multiple
-    className="form-control mb-3"
-    onChange={handleImageChange}
-  />
-
-  {/* OLD IMAGE PREVIEW */}
-  <label className="form-label">Existing Images</label>
-  <div className="d-flex gap-2 mb-3">
-    {oldImages.map((img, i) => (
-      <img
-        key={i}
-        src={img}
-        alt=""
-        width="60"
-        height="60"
-        style={{
-          objectFit: "cover",
-          borderRadius: "6px",
-        }}
-      />
-    ))}
-  </div>
-
-  <button className="btn btn-primary px-5" type="submit">
-    Update Product
-  </button>
-
-</form>
-
+            <button className="btn btn-primary w-100">
+              Update Product
+            </button>
+          </form>
         </div>
       </div>
     </div>
