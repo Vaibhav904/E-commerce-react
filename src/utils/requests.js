@@ -2,9 +2,20 @@ import axios from "axios";
 import api from "./api";
 
 export const getProductById = async (slug) => {
+  const token = localStorage.getItem("token"); // ya jo bhi tumhara token key hai
+
   const res = await axios.get(
-    `http://tech-shop.techsaga.live/api/product-details/${slug}`
+    `http://tech-shop.techsaga.live/api/product-details/${slug}`,
+    {
+      headers: token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : {},
+    }
   );
+  http://tech-shop.techsaga.live/api/wishlist/toggle
+
   return res.data;
 };
 export const getProducts = async (id) => {

@@ -29,13 +29,13 @@ const [selectedAddressId, setSelectedAddressId] = useState(null);
 
 
 
-  useEffect(() => {
-    if (addresses?.length && !isDefaultSet.current) {
-      setSelectedAddress(addresses[0]);
-      isDefaultSet.current = true;
-    }
-  }, [addresses]);
-
+useEffect(() => {
+  if (addresses?.length && !isDefaultSet.current) {
+    setSelectedAddresslocal(addresses[0]); // local
+    setSelectedAddress(addresses[0]);      // parent
+    isDefaultSet.current = true;
+  }
+}, [addresses]);
 
 
  
@@ -148,17 +148,54 @@ const [selectedAddressId, setSelectedAddressId] = useState(null);
   };
 
   /* ================= DELIVER BUTTON ================= */
-  const handleDeliverHere = () => {
-    if (!selectedAddress) {
-      alert("Please select an address");
-      return;
-    }
+const handleDeliverHere = async () => {
+  if (!selectedAddress) {
+    alert("Please select an address");
+    return;
+  }
 
-    console.log("Deliver to:", selectedAddress);
+  try {
+    // 🔥 STEP 1: PLACE ORDER
+    const orderRes = await axios.post(
+      "http://tech-shop.techsaga.live/api/place-order",
+      {
+        address_id: selectedAddress.id,
+        
+        taxes: 0,
+        shipping: 0,
+        discount: 0,
+        offerdiscount: 0,
+        is_quick: false
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    );
 
-    // 👉 next step
-    // navigate("/payment");
-  };
+    const orderId = orderRes.data.order_id;
+
+    // 🔥 STEP 2: CREATE STRIPE SESSION
+    const stripeRes = await axios.post(
+      "http://tech-shop.techsaga.live/api/create-stripe-session",
+      { order_id: orderId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // 🔥 STEP 3: REDIRECT
+    window.location.href = stripeRes.data.url;
+
+  } catch (err) {
+    console.log(err.response?.data || err);
+    alert("Something went wrong");
+  }
+};
 
   return (
     <div className="left-side">

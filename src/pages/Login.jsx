@@ -10,10 +10,13 @@ import {
 } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { setCartFromApi } from "../Redux/CartSlice";
 import { useSelector } from "react-redux";
 
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [successMessage, setSuccessMessage] = useState("");
 
   const [formData, setFormData] = useState({
@@ -43,7 +46,6 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // 🔐 LOGIN API
       const res = await axios.post(
         "http://tech-shop.techsaga.live/api/v1/user-auth",
         formData,
@@ -52,7 +54,7 @@ const Login = () => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (res.data.status) {
@@ -65,27 +67,54 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("name", userData.name);
 
-        // 🛒 STEP 2: Redux cart → API cart sync
+        // 🛒 Redux cart → API cart sync
+        // 🛒 Guest cart → API sync
+
+        // console.log('cartItems', cartItems);
         if (cartItems.length > 0) {
           for (const item of cartItems) {
-            await axios.post(
-              "http://tech-shop.techsaga.live/api/cart/add",
-              {
-                product_id: item.product_id,
-                quantity: item.quantity,
-              },
-              {
-                headers: {
-                  Accept: "application/json",
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
+            try {
+              await axios.post(
+                "http://tech-shop.techsaga.live/api/cart/add",
+                {
+                  product_id: item.product_id || item.variant_id,
+                  quantity: item.quantity,
+                  variant_attribute_id: item.variant_attribute_id,
+                  variant_id: item.variant_id,
                 },
-              }
-            );
+                {
+                  headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                },
+              );
+            } catch (cartErr) {
+              console.log("Cart sync error:", cartErr.response?.data);
+            }
           }
         }
 
-        // 🚀 redirect
+        // ✅ 🔥 MOST IMPORTANT STEP (missing in your code)
+        try {
+          const cartRes = await axios.post(
+            "http://tech-shop.techsaga.live/api/cart/view",
+            {},
+            {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+
+          // ✅ Redux update with API cart
+          dispatch(setCartFromApi(cartRes.data.cart));
+        } catch (err) {
+          console.log("Fetch cart error:", err);
+        }
+
         setTimeout(() => {
           navigate("/");
         }, 1500);
@@ -93,10 +122,14 @@ const Login = () => {
         setApiError(res.data.message || "Invalid credentials");
       }
     } catch (error) {
+      console.log("FULL ERROR:", error.response);
+
       if (error.response?.status === 401) {
         setApiError("Invalid email or password ❌");
+      } else if (error.response?.status === 403) {
+        setApiError(error.response?.data?.message || "Access Forbidden ❌");
       } else {
-        setApiError("Server error ❌");
+        setApiError(error.response?.data?.message || "Server error ❌");
       }
     } finally {
       setIsLoading(false);

@@ -1,4 +1,5 @@
-import React from 'react'
+import React from "react";
+import { Link } from "react-router-dom";
 import {
   BsPinterest,
   BsFacebook,
@@ -13,6 +14,8 @@ export default function Footer() {
   return (
     <footer className="footer-section container-fluid">
       <div className="row gy-5">
+        
+        {/* Left Section */}
         <div className="col-lg-4 col-md-6">
           <h3>Let's get in touch</h3>
           <small>
@@ -20,74 +23,61 @@ export default function Footer() {
             first order. Be the first to know about exclusive offers, new
             arrivals, and styling tips.
           </small>
-          <form className="mt-3 d-flex flex-column flex-sm-row gap-2">
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              aria-label="Enter your email"
-              className="form-control flex-grow-1"
-              required
-            />
-            <button type="submit" className="subscribe-btn">
-              Subscribe
-            </button>
-          </form>
-          <div className="mt-3">
-            <small>
-              By subscribing, you agree to our{" "}
-              <a href="#">Privacy Policy</a> and consent to receive updates from
-              our company.
-            </small>
-          </div>
         </div>
 
+        {/* Quick Links */}
         <div className="col-lg-2 col-md-3 col-6 footer-links">
           <h5>Quick links</h5>
           <ul>
             <li>
-              <a href="#">My account</a>
+              <Link to="/account">My account</Link>
             </li>
             <li>
-              <a href="#">Cart</a>
+              <Link to="/cart">Cart</Link>
             </li>
             <li>
-              <a href="#">Wishlist</a>
+              <Link to="/wishlist">Wishlist</Link>
             </li>
             <li>
-              <a href="#">Product Compare</a>
+              <Link to="/compare">Product Compare</Link>
             </li>
             <li>
-              <a href="#">Order Tracking</a>
+              <Link to="/order-tracking">Order Tracking</Link>
+            </li>
+             <li>
+              <Link to="/vendor-login">Add Vendor's </Link>
             </li>
           </ul>
         </div>
 
+        {/* Company */}
         <div className="col-lg-2 col-md-3 col-6 footer-links">
           <h5>Company</h5>
           <ul>
             <li>
-              <a href="#" style={{ color: "#222222", fontWeight: 600 }}>
+              <Link to="/about" style={{ color: "#222222", fontWeight: 600 }}>
                 About Us
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#">Careers</a>
+              <Link to="/careers">Careers</Link>
             </li>
             <li>
-              <a href="#">Delivery Information</a>
+              <Link to="/delivery">Delivery Information</Link>
             </li>
             <li>
-              <a href="#">Privacy Policy</a>
+              <Link to="/privacy">Privacy Policy</Link>
             </li>
             <li>
-              <a href="#">Terms &amp; Conditions</a>
+              <Link to="/terms">Terms & Conditions</Link>
             </li>
             <li>
-              <a href="#">Contact Us</a>
+              <Link to="/contact">Contact Us</Link>
             </li>
           </ul>
         </div>
 
+        {/* Social */}
         <div className="col-lg-4 col-md-6">
           <h5>Follow us</h5>
           <p className="small">
@@ -95,29 +85,16 @@ export default function Footer() {
             promotions.
           </p>
           <div className="social-icons">
-            <button>
-              <BsPinterest />
-            </button>
-            <button>
-              <BsFacebook />
-            </button>
-            <button>
-              <BsInstagram />
-            </button>
-            <button>
-              <BsTwitterX />
-            </button>
-            <button>
-              <BsSnapchat />
-            </button>
-            <button>
-              <BsYoutube />
-            </button>
-            <button>
-              <BsTiktok />
-            </button>
+            <button><BsPinterest /></button>
+            <button><BsFacebook /></button>
+            <button><BsInstagram /></button>
+            <button><BsTwitterX /></button>
+            <button><BsSnapchat /></button>
+            <button><BsYoutube /></button>
+            <button><BsTiktok /></button>
           </div>
         </div>
+
       </div>
     </footer>
   );

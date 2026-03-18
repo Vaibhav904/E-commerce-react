@@ -18,9 +18,9 @@ export default function Featured() {
   const dispatch = useDispatch();
   const { token } = useContext(AuthContext);
   const [selectedColorId, setSelectedColorId] = useState(null);
-
+const [wishlistState, setWishlistState] = useState({});
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedSizeId, setSelectedSizeId] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -29,40 +29,114 @@ export default function Featured() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isOpen, setIsOpen] = useState(false);
-
+  const [sortOrder, setSortOrder] = useState("");
+const [filterLoading, setFilterLoading] = useState(false);
+const [loading, setLoading] = useState(true);
   /* ---------------- HELPERS ---------------- */
   const makeSlug = (text) => text?.toLowerCase().trim().replace(/\s+/g, "-");
 
   /* ---------------- FETCH CATEGORY PRODUCTS ---------------- */
-  const fetchCategoryProducts = async () => {
+const fetchCategoryProducts = async () => {
+  try {
+    setLoading(true);
+    //  setLoading(true);
+      //  alert("API hit ho rahi hai...");
+
+    let res;
+
     try {
-      setLoading(true);
-
-      let res;
-
-      try {
-        // 🔹 First try subcategory API
-        res = await axios.get(
-          `http://tech-shop.techsaga.live/api/product-subcategory/${slug}`,
-        );
-      } catch (err) {
-        // 🔹 If subcategory fails, fallback to category API
-        res = await axios.get(
-          `http://tech-shop.techsaga.live/api/product-category/${slug}`,
-        );
-      }
-
-      setProducts(res.data.products || []);
-    } catch (error) {
-      console.error("Product fetch error:", error);
-    } finally {
-      setLoading(false);
+         
+      // 🔹 First try subcategory API
+      res = await axios.get(
+  `http://tech-shop.techsaga.live/api/product-subcategory/${slug}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          }
+);
+    } catch (err) {
+      // 🔹 If subcategory fails, fallback to category API
+    res = await axios.get(
+  `http://tech-shop.techsaga.live/api/product-category/${slug}`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  }
+);
     }
-  };
 
-  useEffect(() => {
-    if (slug) fetchCategoryProducts();
-  }, [slug]);
+    const productList = res.data.products || [];
+
+    setProducts(productList);
+
+    // ✅ wishlist state prepare
+    const wishlistMap = {};
+    productList.forEach((p) => {
+      wishlistMap[p.id] = p.in_wishlist;
+    });
+
+    setWishlistState(wishlistMap);
+
+  } catch (error) {
+    console.error("Product fetch error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  if (slug) fetchCategoryProducts();
+}, [slug]);
+
+
+const handleWishlistToggle = async (e, item) => {
+  e.stopPropagation();
+
+  if (!token) {
+    navigate("/login");
+    return;
+  }
+
+  try {
+    const detailRes = await axios.get(
+      `http://tech-shop.techsaga.live/api/product-details/${item.slug}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const variantId =
+      detailRes.data.product?.variants?.[0]?.variant_id;
+
+    await axios.post(
+      "http://tech-shop.techsaga.live/api/wishlist/toggle",
+      {
+        product_id: item.id,
+        variant_id: variantId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // UI instant update
+    setWishlistState((prev) => ({
+      ...prev,
+      [item.id]: !prev[item.id],
+    }));
+
+  } catch (error) {
+    console.log("wishlist error", error);
+  }
+};
 
   const filteredProducts = useSelector((state) => state.products.filtered);
 
@@ -216,15 +290,55 @@ export default function Featured() {
 
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
+    const displayProducts = filteredProducts.length ? filteredProducts : products;
+
+const sortedProducts = [...displayProducts].sort((a, b) => {
+  if (sortOrder === "asc") {
+    return a.title.localeCompare(b.title);
+  }
+  if (sortOrder === "desc") {
+    return b.title.localeCompare(a.title);
+  }
+  return 0;
+});
 
 
 // if (loading) return <h3 className="text-center mt-5">Loading...</h3>;
 
    return (
   <div className="featured-pro container">
+    <div className="d-flex justify-content-start mb-3">
+
+  <Dropdown>
+    <Dropdown.Toggle variant="dark">
+      Sort By
+    </Dropdown.Toggle>
+
+    <Dropdown.Menu>
+      <Dropdown.Item onClick={() => setSortOrder("asc")}>
+        A → Z
+      </Dropdown.Item>
+
+      <Dropdown.Item onClick={() => setSortOrder("desc")}>
+        Z → A
+      </Dropdown.Item>
+    </Dropdown.Menu>
+
+  </Dropdown>
+
+</div>
     {/* PRODUCTS */}
-    <div className="row g-5">
-      {(filteredProducts.length ? filteredProducts : products).map((item) => (
+    {/* PRODUCTS */}
+
+{loading ? (
+  <div className="text-center py-5">
+    <div className="spinner-border text-dark" role="status">
+      <span className="visually-hidden">Loading...</span>
+    </div>
+  </div>
+) : (
+    <div className="row g-5 py-5">
+      {sortedProducts.map((item) => (
         <div className="col-md-3" key={item.id}>
           {/* <div
       className="seller-card"
@@ -264,9 +378,15 @@ export default function Featured() {
 
             <div className="btn-selectwish">
               <div className="whislist-icon">
-                <button onClick={(e) => e.stopPropagation()}>
-                  <CiHeart />
-                </button>
+              <button onClick={(e) => handleWishlistToggle(e, item)}>
+  <CiHeart
+    size={22}
+    style={{
+      color: wishlistState[item.id] ? "red" : "#ccc",
+      cursor: "pointer",
+    }}
+  />
+</button>
 
                 <button onClick={(e) => e.stopPropagation()}>
                   <FaEye />
@@ -299,6 +419,7 @@ export default function Featured() {
         </div>
       ))}
     </div>
+    )}
 
     {/* ---------------- MODAL ---------------- */}
     {showModal && productDetails && (

@@ -2,18 +2,19 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { clearBuyNowProduct } from "../Redux/buyNowSlice";
+import { useNavigate } from "react-router-dom";
 
 export default function Ordersum({ selectedAddress }) {
   const [checkoutData, setCheckoutData] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const buyNowProduct = useSelector((state) => state.buyNow?.product || null);
-
+const cartItems = useSelector((state) => state.cart?.items || []);
   // console.log("buyNowProduct", checkoutData);
 
   const dispatch = useDispatch();
   const token = localStorage.getItem("token");
-
+const navigate = useNavigate();
   /* ================= CART CHECKOUT ================= */
   const fetchCheckout = async () => {
     try {
@@ -69,7 +70,8 @@ export default function Ordersum({ selectedAddress }) {
   /* ================= PLACE ORDER ================= */
   const handlePlaceOrder = async () => {
     if (!token) {
-      alert("Please login first");
+     navigate("/login");   // 👈 login page par redirect
+      
       return;
     }
 
@@ -84,27 +86,32 @@ export default function Ordersum({ selectedAddress }) {
       const isQuickOrder = Boolean(buyNowProduct);
 
       // 1️⃣ PLACE ORDER
-      const { data: orderData } = await axios.post(
-        "http://tech-shop.techsaga.live/api/place-order",
-        {
-          is_quick: isQuickOrder,
-          address_id: selectedAddress.id,
-          total: checkoutData.total,
+ const { data: orderData } = await axios.post(
+  "http://tech-shop.techsaga.live/api/place-order",
+  {
+    is_quick: isQuickOrder,
+    address_id: selectedAddress.id,
+    total: checkoutData.total,
 
-          // ⚠️ total sirf BUY NOW ke liye
-          ...(isQuickOrder && {
-            product_id: checkoutData?.items?.[0]?.id,
-            quantity: checkoutData?.items?.[0]?.quantity,
-          }),
-        },
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
+    ...(isQuickOrder
+      ? {
+          variant_id: buyNowProduct.variant_id,
+          quantity: buyNowProduct.quantity,
+        }
+      : {
+          items: cartItems.map((item) => ({
+            variant_id: item.variant_id,
+            quantity: item.quantity,
+          })),
+        }),
+  },
+  {
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  },
+);
       if (orderData?.order_id) {
         localStorage.setItem("last_order_id", String(orderData.order_id));
       }
@@ -148,6 +155,8 @@ export default function Ordersum({ selectedAddress }) {
       dispatch(clearBuyNowProduct());
     };
   }, []);
+
+  
 
   return (
     <div className="right-side">

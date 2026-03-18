@@ -11,13 +11,16 @@ import { useSelector, useDispatch } from "react-redux";
 import { setBuyNowProduct } from "../Redux/buyNowSlice";
 import { useNavigate } from "react-router-dom";
 
+
 export default function BestSeller() {
   const { token } = useContext(AuthContext);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   /* ================= STATES ================= */
-  const [products, setProducts] = useState([]);
-
+const [products, setProducts] = useState([]);
+const [product, setProduct] = useState(null);
+const [isWishlisted, setIsWishlisted] = useState(false);
+const [wishlist, setWishlist] = useState({});
   const [loading, setLoading] = useState(false);
   const [selectedProcess, setSelectedProcess] = useState("best");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -27,9 +30,8 @@ export default function BestSeller() {
   console.log("productDetails", productDetails);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
-
+ 
   const [selectedSizeId, setSelectedSizeId] = useState(null);
   const [selectedColorId, setSelectedColorId] = useState(null);
   console.log('selectedSizeId------', selectedSizeId);
@@ -59,6 +61,68 @@ export default function BestSeller() {
   };
 
 
+
+const handleWishlistToggle = async (e, product) => {
+  e.stopPropagation();
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    navigate("/login");
+    return;
+  }
+
+  try {
+    const detailRes = await axios.get(
+      `http://tech-shop.techsaga.live/api/product-details/${product.slug}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    );
+
+    console.log("my details", detailRes);
+
+    const variantId = detailRes.data.product?.variants?.[0]?.variant_id;
+    console.log("my variantId", variantId);
+
+    const res = await axios.post(
+      "http://tech-shop.techsaga.live/api/wishlist/toggle",
+      {
+        product_id: product.id,
+        variant_id: variantId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    );
+
+    console.log("wishlist response", res.data);
+
+    // ⭐ UI update
+    setProducts((prev) =>
+      prev.map((item) =>
+        item.id === product.id
+          ? {
+              ...item,
+              in_wishlist: !item.in_wishlist,
+            }
+          : item
+      )
+    );
+  } catch (error) {
+    console.log("Wishlist toggle failed", error.response?.data);
+  }
+};
+
+useEffect(() => {
+  setIsWishlisted(product?.in_wishlist);
+}, [product]);
   /* ================= DROPDOWN DATAello ================= */
   const processes = {
     best: {
@@ -79,17 +143,26 @@ export default function BestSeller() {
     }
   };
   /* ================= PRODUCT LIST API ================= */
-  const fetchProducts = async (apiUrl) => {
-    try {
-      setLoading(true);
-      const res = await axios.get(apiUrl);
-      setProducts(res.data.products || []);
-    } catch (error) {
-      console.error("Product List Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchProducts = async (apiUrl) => {
+  try {
+    setLoading(true);
+
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+
+    setProducts(res.data.products || []);
+  } catch (error) {
+    console.error("Product List Error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fetchCart = async () => {
     try {
@@ -120,6 +193,7 @@ export default function BestSeller() {
     const selectedAttributes = getSelectedAttributeIds(selectedVariant);
 
     try {
+      // console.log('token-------->dddddddddddddd', token);
       if (token) {
         await axios.post(
           "http://tech-shop.techsaga.live/api/cart/add",
@@ -139,18 +213,18 @@ export default function BestSeller() {
 
         await fetchCart();
       } else {
-        dispatch(
-          addToCart({
-            product_id: productDetails.id,
-            variant_id: selectedVariant.variant_id,
-            attributes: selectedAttributes,
-            title: productDetails.title,
-            price: selectedVariant.sale_price,
-            image:
-              selectedVariant.images?.[0] || selectedVariant.thumbnail || "",
-            quantity,
-          }),
-        );
+       dispatch(
+  addToCart({
+    product_id: productDetails.id,
+    variant_id: selectedVariant.variant_id,
+    variant_attribute_id: [selectedSizeId, selectedColorId], // 👈 IMPORTANT
+    title: productDetails.title,
+    price: selectedVariant.sale_price,
+    image:
+      selectedVariant.images?.[0] || selectedVariant.thumbnail || "",
+    quantity,
+  }),
+);
       }
     } catch (error) {
       console.log("Add to cart failed", error);
@@ -313,6 +387,8 @@ console.log({
   quantity,
 });
 
+console.log("my produc t",product);
+
   /* ================= JSX ================= */
   return (
     <>
@@ -400,9 +476,16 @@ console.log({
 
                     <div className="btn-selectwish">
                       <div className="whislist-icon">
-                        <button onClick={(e) => e.stopPropagation()}>
-                          <CiHeart />
-                        </button>
+     <button>
+ <CiHeart
+  size={20}
+  style={{
+    color: product?.in_wishlist ? "red" : "#ccc",
+    cursor: "pointer",
+  }}
+  onClick={(e) => handleWishlistToggle(e, product)}
+/>
+</button>
 
                         <button onClick={(e) => e.stopPropagation()}>
                           <FaEye />

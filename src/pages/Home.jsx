@@ -18,7 +18,7 @@ import {
   BsCreditCard2Front,
 } from "react-icons/bs";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import BestSellerData from "../component/BestSeller";
 
 export default function Home() {
@@ -443,7 +443,8 @@ export default function Home() {
           </div>
           <div className="new-collection-arrow">
             <h4>Shop New Collection</h4>
-            <FaArrowRight />
+            
+            <Link to="/categorie/shoes"><FaArrowRight /></Link>
           </div>
         </div>
       </div>
@@ -702,7 +703,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <section className="happy-cus">
+      {/* <section className="happy-cus">
         <div className="container-fluid p-5">
           <h4 className="happy-text">Happy Customers</h4>
           <Swiper
@@ -734,7 +735,7 @@ export default function Home() {
             ))}
           </Swiper>
         </div>
-      </section>
+      </section> */}
       <section className="instagram-section container-fluid">
         <h2>Follow us Instagram</h2>
         <p>

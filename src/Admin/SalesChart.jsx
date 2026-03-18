@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaDollarSign,
   FaShoppingCart,
@@ -16,6 +16,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import axios from "axios";
 
 ChartJS.register(
   LineElement,
@@ -23,25 +24,137 @@ ChartJS.register(
   LinearScale,
   PointElement,
   Tooltip,
-  Legend
+  Legend,
 );
 
 const SalesChart = () => {
   // SALES CHART DATA
-  const salesData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-    datasets: [
-      {
-        label: "Sales (₹)",
-        data: [12000, 15000, 10000, 18000, 22000, 17000, 25000],
-        borderColor: "rgba(75,192,192,1)",
-        backgroundColor: "rgba(75,192,192,0.2)",
-        tension: 0.4,
-        pointBackgroundColor: "rgba(75,192,192,1)",
-        fill: true,
+  // const salesData = {
+  //   labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+  //   datasets: [
+  //     {
+  //       label: "Sales (₹)",
+  //       data: [12000, 15000, 10000, 18000, 22000, 17000, 25000],
+  //       borderColor: "rgba(75,192,192,1)",
+  //       backgroundColor: "rgba(75,192,192,0.2)",
+  //       tension: 0.4,
+  //       pointBackgroundColor: "rgba(75,192,192,1)",
+  //       fill: true,
+  //     },
+  //   ],
+  // };
+  const [totalSales, setTotalSales] = useState("");
+  const [salesComparison, setSalesComparison] = useState("");
+  const [totalOrders, setTotalOrders] = useState("");
+  const [ordersComparison, setOrdersComparison] = useState("");
+  const [totalcustomer,setTotalCustomer]=useState("");
+   const [customerComparison,setCustomerComparison]=useState("");
+   const [salesData, setSalesData] = useState(null);
+   const [recentOrders, setRecentOrders] = useState([]);
+
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    axios
+      .get("http://tech-shop.techsaga.live/api/v1/dashboard/total-sales", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        if (res.data.status) {
+          setTotalSales(res.data.overall.formatted);
+          setSalesComparison(res.data.comparison.text);
+        }
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+
+
+useEffect(() => {
+
+  const token = localStorage.getItem("token");
+
+  axios.get(
+    "http://tech-shop.techsaga.live/api/v1/dashboard/recent-orders",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    ],
-  };
+    }
+  )
+  .then((res) => {
+    if (res.data.status) {
+      setRecentOrders(res.data.data);
+    }
+  })
+  .catch((err) => console.log(err));
+
+}, []);
+
+
+useEffect(() => {
+
+  const token = localStorage.getItem("token");
+
+  axios.get(
+    "http://tech-shop.techsaga.live/api/v1/dashboard/total-customers",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+  .then((res) => {
+    if (res.data.status) {
+      setTotalCustomer(res.data.formatted_customers);
+      setCustomerComparison(res.data.comparison_text);
+    }
+  })
+  .catch((err) => console.log(err));
+
+}, []);
+
+useEffect(() => {
+
+  const token = localStorage.getItem("token");
+
+  axios.get(
+    "http://tech-shop.techsaga.live/api/v1/dashboard/yearly-sales",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+  .then((res) => {
+
+    const months = res.data.data.months;
+    const sales = res.data.data.sales.map(Number);
+
+    setSalesData({
+      labels: months,
+      datasets: [
+        {
+          label: "Sales (₹)",
+          data: sales,
+          borderColor: "rgba(75,192,192,1)",
+          backgroundColor: "rgba(75,192,192,0.2)",
+          tension: 0.4,
+          pointBackgroundColor: "rgba(75,192,192,1)",
+          fill: true,
+        },
+      ],
+    });
+
+  })
+  .catch((err) => console.log(err));
+
+}, []);
+
+
 
   // TRAFFIC SOURCES DATA
   const trafficData = {
@@ -74,6 +187,24 @@ const SalesChart = () => {
     ],
   };
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    axios
+      .get("http://tech-shop.techsaga.live/api/v1/dashboard/total-orders", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        if (res.data.status) {
+          setTotalOrders(res.data.formatted_orders);
+          setOrdersComparison(res.data.comparison_text);
+        }
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
   const options = {
     responsive: true,
     plugins: {
@@ -92,19 +223,18 @@ const SalesChart = () => {
         <div className="card stat-card">
           <div className="stat-info">
             <h3>TOTAL SALES</h3>
-            <p>₹24,562</p>
-            <span>+12% from last week</span>
+            <p>₹{totalSales}</p>
+            <span>{salesComparison}</span>
           </div>
           <div className="stat-icon sales">
             <FaDollarSign />
           </div>
         </div>
-
         <div className="card stat-card">
           <div className="stat-info">
             <h3>TOTAL ORDERS</h3>
-            <p>1,258</p>
-            <span>+8% from last week</span>
+            <p>{totalOrders}</p>
+            <span>{ordersComparison}</span>
           </div>
           <div className="stat-icon orders">
             <FaShoppingCart />
@@ -114,8 +244,8 @@ const SalesChart = () => {
         <div className="card stat-card">
           <div className="stat-info">
             <h3>TOTAL CUSTOMERS</h3>
-            <p>3,642</p>
-            <span>+15% from last week</span>
+            <p>{totalcustomer}</p>
+            <span>{customerComparison}</span>
           </div>
           <div className="stat-icon customers">
             <FaUsers />
@@ -136,12 +266,12 @@ const SalesChart = () => {
 
       {/* CHARTS */}
       <div className="charts">
-        <div className="card">
-          <h3>Sales Overview</h3>
-          <div className="chart-container">
-            <Line data={salesData} options={options} />
-          </div>
-        </div>
+       <div className="card">
+  <h3>Sales Overview</h3>
+  <div className="chart-container">
+    {salesData && <Line data={salesData} options={options} />}
+  </div>
+</div>
 
         <div className="card">
           <h3>Traffic Sources</h3>
@@ -153,37 +283,39 @@ const SalesChart = () => {
 
       {/* RECENT ORDERS */}
       <div className="card">
-        <h3>Recent Orders</h3>
+  <h3>Recent Orders</h3>
 
-        {[
-          ["#ORD-001", "John Doe • Wireless Headphones", "₹150", "Delivered"],
-          ["#ORD-002", "Jane Smith • Smart Watch", "₹250", "Processing"],
-          ["#ORD-003", "Robert Johnson • Sneakers", "₹120", "Delivered"],
-          ["#ORD-004", "Sarah Williams • Backpack", "₹80", "Cancelled"],
-          ["#ORD-005", "Michael Brown • Water Bottle", "₹30", "Delivered"],
-        ].map((order, i) => (
-          <div className="order-item" key={i}>
-            <div className="order-info">
-              <div className="order-img">
-                <FaBox />
-              </div>
-              <div>
-                <h4>{order[0]}</h4>
-                <p>{order[1]}</p>
-                <span>Nov 2023</span>
-              </div>
-            </div>
-            <div>
-              <p>
-                <strong>{order[2]}</strong>
-              </p>
-              <span className={`order-status ${order[3].toLowerCase()}`}>
-                {order[3]}
-              </span>
-            </div>
-          </div>
-        ))}
+  {recentOrders.map((order, i) => (
+    <div className="order-item" key={i}>
+      <div className="order-info">
+        <div className="order-img">
+          <FaBox />
+        </div>
+
+        <div>
+          <h4>{order.display_id}</h4>
+
+          <p>
+            {order.user?.name} • {order.items?.[0]?.product?.name}
+          </p>
+
+          <span>{order.created_at}</span>
+        </div>
       </div>
+
+      <div>
+        <p>
+          <strong>₹{order.total}</strong>
+        </p>
+
+        <span className={`order-status ${order.status.toLowerCase()}`}>
+          {order.status}
+        </span>
+      </div>
+    </div>
+  ))}
+
+</div>
     </div>
   );
 };

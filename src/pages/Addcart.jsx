@@ -2,7 +2,12 @@ import React, { useEffect, useState } from "react";
 import Form from "react-bootstrap/Form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { addToCart, decreaseQty, setCartFromApi } from "../Redux/CartSlice";
+import {
+  addToCart,
+  decreaseQty,
+  removeFromCart,
+  setCartFromApi,
+} from "../Redux/CartSlice";
 import axios from "axios";
 
 export default function Addcart({ open, close }) {
@@ -10,14 +15,17 @@ export default function Addcart({ open, close }) {
   const [quantity, setQuantity] = useState(1);
   const [countdown, setCountdown] = useState(246);
   const [cartData, setCartData] = useState(null);
+  const [showCoupon, setShowCoupon] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [couponMessage, setCouponMessage] = useState("");
 
   // console.log("cartData", cartData);
 
   const [cartList, setCartList] = useState([]);
- 
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-
   // ✅ TOKEN
 
   const handleCheckout = () => {
@@ -32,27 +40,58 @@ export default function Addcart({ open, close }) {
     }
   };
 
-  const formatCountdown = () => {
-    const minutes = Math.floor(countdown / 60);
-    const seconds = countdown % 60;
-    return `${minutes}m ${seconds}s`;
+  // const formatCountdown = () => {
+  //   const minutes = Math.floor(countdown / 60);
+  //   const seconds = countdown % 60;
+  //   return `${minutes}m ${seconds}s`;
+  // };
+
+  const applyCoupon = async () => {
+    if (!couponCode) {
+      setCouponMessage("Please enter coupon code");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("coupon_code", couponCode);
+
+      const res = await axios.post(
+        "http://tech-shop.techsaga.live/api/coupon/apply",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        },
+      );
+
+      console.log("coupon response", res.data);
+
+      if (res.data.success) {
+        setDiscount(res.data.discount_amount || 0);
+        setCouponMessage("Coupon Applied Successfully");
+      } else {
+        setCouponMessage(res.data.message || "Invalid Coupon");
+      }
+    } catch (error) {
+      console.log("Coupon error", error.response?.data || error);
+      setCouponMessage("Coupon failed");
+    }
   };
-
-
-
   const cartItems = useSelector((state) => state.cart.cart);
- 
 
-  const apiSubtotal =
-    cartData?.reduce(
-      (total, item) => total + Number(item.price) * Number(item.quantity),
-      0
-    ) || 0;
+  // const apiSubtotal =
+  //   cartData?.reduce(
+  //     (total, item) => total + Number(item.price) * Number(item.quantity),
+  //     0,
+  //   ) || 0;
   const reduxSubtotal = useSelector((state) =>
     state.cart.cart.reduce(
       (total, item) => total + item.price * item.quantity,
-      0
-    )
+      0,
+    ),
   );
 
   const fetchCart = async () => {
@@ -67,7 +106,7 @@ export default function Addcart({ open, close }) {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       // console.log("res", res?.data?.cart);
 
@@ -83,90 +122,94 @@ export default function Addcart({ open, close }) {
     fetchCart();
   }, []);
 
-const removeCartItem = async (item) => {
-  // if (!token) {
-  //   dispatch(removeFromCart(item.product_id));
-  //   return;
-  // }
+  const removeCartItem = async (item) => {
+    // if (!token) {
+    //   dispatch(removeFromCart(item.product_id));
+    //   return;
+    // }
 
-  try {
-    const formData = new FormData();
+    // 🔥 AGAR TOKEN NAHI HAI (Guest User)
+    if (!token) {
+      dispatch(removeFromCart(item.product_id));
+      return;
+    }
 
-    // safest way
-    const cartId = item.cart_id || item.id;
+    try {
+      const formData = new FormData();
 
-    formData.append("cart_id", cartId);
+      // safest way
+      const cartId = item.cart_id || item.id;
 
-    await axios.post(
-      "http://tech-shop.techsaga.live/api/cart/remove",
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
+      formData.append("cart_id", cartId);
+
+      await axios.post(
+        "http://tech-shop.techsaga.live/api/cart/remove",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
         },
-      }
-    );
+      );
 
-    fetchCart();
-  } catch (error) {
-    console.log("Remove error:", error.response?.data || error);
-  }
-};
+      fetchCart();
+    } catch (error) {
+      console.log("Remove error:", error.response?.data || error);
+    }
+  };
   // ======================
   // UPDATE QUANTITY
   // ======================
-const updateCartQuantity = async (item, newQty) => {
-  if (newQty < 1) return;
+  const updateCartQuantity = async (item, newQty) => {
+    if (newQty < 1) return;
 
-  try {
-    const formData = new FormData();
-    const cartId = item.cart_id || item.id;
+    try {
+      const formData = new FormData();
+      const cartId = item.cart_id || item.id;
 
-    formData.append("cart_id", cartId);
-    formData.append("quantity", newQty);
+      formData.append("cart_id", cartId);
+      formData.append("quantity", newQty);
 
-    const res = await axios.post(
-      "http://tech-shop.techsaga.live/api/cart/update",
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
+      const res = await axios.post(
+        "http://tech-shop.techsaga.live/api/cart/update",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
         },
-      }
-    );
+      );
 
-    const updatedQty = Number(res.data.data.quantity);
+      const updatedQty = Number(res.data.data.quantity);
 
-    // 🔥 IMPORTANT FIX
-    dispatch(
-      setCartFromApi(
-        cartItems.map((c) =>
-          (c.cart_id || c.id) === cartId
-            ? {
-                ...c,
-                quantity: updatedQty,
-              }
-            : c
-        )
-      )
-    );
-  } catch (err) {
-    console.log("Update error:", err.response?.data || err);
-  }
-};
- 
+      // 🔥 IMPORTANT FIX
+      dispatch(
+        setCartFromApi(
+          cartItems.map((c) =>
+            (c.cart_id || c.id) === cartId
+              ? {
+                  ...c,
+                  quantity: updatedQty,
+                }
+              : c,
+          ),
+        ),
+      );
+    } catch (err) {
+      console.log("Update error:", err.response?.data || err);
+    }
+  };
+
   const handleIncrease = (item) => {
     dispatch(addToCart(item));
   };
 
   const handleDecrease = (id) => {
-    console.log('id', id);
+    console.log("id", id);
     dispatch(decreaseQty(id));
   };
-
-
 
   return (
     <>
@@ -193,16 +236,16 @@ const updateCartQuantity = async (item, newQty) => {
               <i className="fas fa-fire"></i>
             </span>
             <small>
-              These products are limited, checkout within
-              <strong className="countdown"> {formatCountdown()}</strong>
+              These products are limited, checkout
+              {/* <strong className="countdown"> {formatCountdown()}</strong> */}
             </small>
           </div>
 
-          <p className="mb-2 mt-2">
+          {/* <p className="mb-2 mt-2">
             Buy <strong>$290.10</strong> more for <strong>FREE Shipping</strong>
-          </p>
+          </p> */}
 
-          <div className="progress-container">
+          {/* <div className="progress-container">
             <div className="progress">
               <div
                 className="progress-bar"
@@ -216,13 +259,15 @@ const updateCartQuantity = async (item, newQty) => {
             <div className="star-badge">
               <i className="fas fa-star"></i>
             </div>
-          </div>
+          </div> */}
         </div>
 
-       
         <div className="cart-body">
-          {cartItems?.map((item, index) => (
-            <div className="cart-item" key={item.id}>
+          {cartItems?.map((item) => (
+            <div
+              className="cart-item"
+              key={item.cart_id || item.id || item.product_id}
+            >
               <div className="d-flex gap-3">
                 <img
                   src={item.image}
@@ -238,13 +283,13 @@ const updateCartQuantity = async (item, newQty) => {
                     <button
                       className="btn btn-outline-secondary"
                       disabled={item.quantity <= 1}
-                    onClick={() => {
-  if (token) {
-    updateCartQuantity(item, item.quantity - 1);
-  } else {
-    handleDecrease(item.product_id);
-  }
-}}
+                      onClick={() => {
+                        if (token) {
+                          updateCartQuantity(item, item.quantity - 1);
+                        } else {
+                          handleDecrease(item.product_id);
+                        }
+                      }}
                     >
                       −
                     </button>
@@ -259,67 +304,89 @@ const updateCartQuantity = async (item, newQty) => {
 
                     <button
                       className="btn btn-outline-secondary"
-                     onClick={() => {
-  if (token) {
-    updateCartQuantity(item, item.quantity + 1);
-  } else {
-    handleIncrease(item);
-  }
-}}
-                     
+                      onClick={() => {
+                        if (token) {
+                          updateCartQuantity(item, item.quantity + 1);
+                        } else {
+                          handleIncrease(item);
+                        }
+                      }}
                     >
                       +
                     </button>
                   </div>
 
-                <button
-  className="remove-btn mt-2"
-  onClick={() => removeCartItem(item)}
->
-  🗑 Remove
-</button>
+                  <button
+                    className="remove-btn mt-2"
+                    onClick={() => removeCartItem(item)}
+                  >
+                    🗑 Remove
+                  </button>
                 </div>
               </div>
             </div>
           ))}
 
-      
-          <div className="action-buttons">
-            <button type="button" className="action-btn">
-              <i className="fas fa-pencil-alt"></i> Note
-            </button>
-            <button type="button" className="action-btn">
-              <i className="fas fa-truck"></i> Shipping
-            </button>
-            <button type="button" className="action-btn">
+          <div className="action-buttons justify-content-end">
+            <button
+              type="button"
+              className="action-btn"
+              onClick={() => setShowCoupon(!showCoupon)}
+            >
               <i className="fas fa-ticket-alt"></i> Coupon
             </button>
           </div>
+
+          {showCoupon && (
+            <div className="coupon-box mt-3">
+              <div className="d-flex gap-2">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Enter coupon code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                />
+
+                <button className="btn btn-dark" onClick={applyCoupon}>
+                  Apply
+                </button>
+              </div>
+
+              {couponMessage && (
+                <small className="text-success">{couponMessage}</small>
+              )}
+            </div>
+          )}
 
           {/* Summary */}
           <div className="summary">
             <div className="d-flex justify-content-between align-items-center mb-2">
               <span>Subtotal</span>
               {/* <strong>₹{subtotal.toFixed(2)}</strong> */}
-              <strong>
-                ₹{(token ? apiSubtotal : reduxSubtotal).toFixed(2)}
-              </strong>
+              <strong>₹{reduxSubtotal.toFixed(2)}</strong>
             </div>
             <div className="d-flex justify-content-between align-items-center small text-muted">
               <span>Shipping</span>
               <span>Calculated at checkout</span>
             </div>
+            {discount > 0 && (
+              <div className="d-flex justify-content-between align-items-center text-success">
+                <span>Discount</span>
+                <strong>- ₹{discount}</strong>
+              </div>
+            )}
           </div>
 
           <button className="checkout-btn" onClick={handleCheckout}>
             <i className="fas fa-lock me-2"></i> Proceed to Checkout
           </button>
 
-          <div className="view-cart">
+          {/* <div className="view-cart">
             <a href="#" className="view-cart-link">
               View Cart Details
             </a>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

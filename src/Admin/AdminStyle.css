@@ -64,7 +64,7 @@
 
 .admin-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: end;
     align-items: center;
     margin-bottom: 30px;
     padding: 20px;
@@ -72,7 +72,8 @@
 }
 
 .search-bar {
-    display: flex;
+    /* display: flex; */
+    display: none;
     align-items: center;
     background: white;
     padding: 10px 15px;

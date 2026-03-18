@@ -3,20 +3,24 @@ import { CiSearch } from "react-icons/ci";
 import { FaUser } from "react-icons/fa";
 import { FaCartShopping } from "react-icons/fa6";
 import { FaInstagram } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import CountrySelector from "./Country";
 import { CiFacebook } from "react-icons/ci";
 import Addcart from "../pages/Addcart";
 import { useDispatch } from "react-redux";
 import { clearCart } from "../Redux/CartSlice";
 import { addProduct } from "../Redux/ProductSlice";
+
 import { FaRegHeart } from "react-icons/fa";
+import axios from "axios";
+import { AuthContext } from "../Context/AuthContext";
 
 export default function Header() {
   const dispatch = useDispatch();
+  const { logout } = useContext(AuthContext);
   const name = localStorage.getItem("name");
   const [showDropdown, setShowDropdown] = useState(false);
-
+  const token = localStorage.getItem("token");
   // 🔥 NEW STATE (ONLY FOR SHOP)
   const [categories, setCategories] = useState([]);
 
@@ -41,12 +45,65 @@ export default function Header() {
     if (!query.trim()) return;
     try {
       const res = await fetch(
-        `https://dummyjson.com/products/search?q=${query}`
+        `https://dummyjson.com/products/search?q=${query}`,
       );
       const data = await res.json();
       dispatch(addProduct(data));
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleOrders = async () => {
+    if (!token) {
+      navigate("/login", {
+        state: { from: "/order-list" },
+      });
+    } else {
+      try {
+        const res = await axios.get(
+          "http://tech-shop.techsaga.live/api/my-order",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        navigate("/order-list", { state: { orders: res.data.data } });
+      } catch (error) {
+        console.log("Order Fetch Error:", error);
+        navigate("/order-list");
+      }
+    }
+  };
+
+  const handelWishlist = async () => {
+    if (!token) {
+      navigate("/login", {
+        state: { from: "/wishlist" },
+      });
+    } else {
+      try {
+        const res = await axios.get(
+          "http://tech-shop.techsaga.live/api/wishlist/list",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          },
+        );
+
+        if (res.data.status) {
+          navigate("/wishlist", { state: { wishlist: res.data.data } });
+        } else {
+          navigate("/wishlist");
+        }
+      } catch (error) {
+        console.error("Wishlist fetch error:", error);
+        navigate("/wishlist");
+      }
     }
   };
 
@@ -79,16 +136,13 @@ export default function Header() {
           {/* ================= NAV ================= */}
           <nav className="nav">
             <ul className="nav-list">
-
               <li className="nav-item">
                 <NavLink to="/">Home</NavLink>
               </li>
 
               {/* 🔥 SHOP (ONLY THIS PART CHANGED) */}
               <li className="nav-item dropdown">
-                <span className="nav-link">
-                  Shop ▾
-                </span>
+                <span className="nav-link">Shop ▾</span>
                 <ul className="dropdown-menu mega-menu">
                   {categories.map((cat) => (
                     <li key={cat.id}>
@@ -103,12 +157,17 @@ export default function Header() {
               <li className="nav-item dropdown">
                 <NavLink to="/page">Page ▾</NavLink>
                 <ul className="dropdown-menu">
-                  <li><Link to="/contact">Contact</Link></li>
-                  <li><Link to="/about">About</Link></li>
-                  <li><Link to="/login">My Account</Link></li>
+                  <li>
+                    <Link to="/contact">Contact</Link>
+                  </li>
+                  <li>
+                    <Link to="/about">About</Link>
+                  </li>
+                  <li>
+                    <Link to="/login">My Account</Link>
+                  </li>
                 </ul>
               </li>
-
             </ul>
           </nav>
 
@@ -144,7 +203,7 @@ export default function Header() {
               <CiSearch />
             </li> */}
 
-             <li
+            <li
               className="user-dropdown"
               onMouseEnter={() => setShowDropdown(true)}
               onMouseLeave={() => setShowDropdown(false)}
@@ -160,11 +219,10 @@ export default function Header() {
                     className="user-info"
                   >
                     <strong>Hello {name || "Guest"}</strong>
-                    {/* <p>{phone || "Not available"}</p> */}
                   </div>
 
                   <ul>
-                    <li onClick={() => navigate("/orders")}>Orders</li>
+                    <li onClick={handleOrders}>Orders</li>
                     <li onClick={() => navigate("/wishlist")}>Wishlist</li>
                     <li>Gift Cards</li>
                     <li>Contact Us</li>
@@ -174,29 +232,31 @@ export default function Header() {
                     </li>
                     <li onClick={() => navigate("/profile")}>Edit Profile</li>
                     <li
-  className="logout"
-  onClick={() => {
-    // 1️⃣ token clear
-    localStorage.removeItem("token");
+                      className="logout"
+                      onClick={() => {
+                        // 1️⃣ token clear
+                        localStorage.removeItem("token");
+                        localStorage.removeItem("name"); //
+                        // 2️⃣ redux cart clear
+                        dispatch(clearCart());
 
-    // 2️⃣ redux cart clear
-    dispatch(clearCart());
+                        // 3️⃣ redux-persist clear (agar use ho raha ho)
+                        localStorage.removeItem("persist:root");
+                        
+                        logout();
 
-    // 3️⃣ redux-persist clear (agar use ho raha ho)
-    localStorage.removeItem("persist:root");
-
-    // 4️⃣ redirect
-    navigate("/login", { replace: true });
-  }}
->
-  Logout
-</li>
+                        // 4️⃣ redirect
+                        navigate("/login", { replace: true });
+                      }}
+                    >
+                      Logout
+                    </li>
                   </ul>
                 </div>
               )}
             </li>
 
-            <li>
+            <li onClick={handelWishlist}>
               <FaRegHeart />
               <div className="wishlist-text">Wishlist</div>
             </li>

@@ -49,6 +49,13 @@ import SpecialProductEdit from "./Admin/SpecialProductEdit";
 import CategoryshopAlls from "./pages/CategoryshopAll";
 import Orderlisting from "./Admin/Orderlisting";
 import OrderDetails from "./Admin/OrderDetails";
+import Wishlist from "./pages/Wishlist";
+import MyOrder from "./pages/MyOrder";
+import VendorLogin from "./Vendor/VendorLogin";
+import VendorVerifyOtp from "./Vendor/VendorVerifyOtp";
+import AdminVendor from "./Admin/AdminVendor";
+
+
 
 function App() {
   const { token } = useContext(AuthContext); // 🔥 token check
@@ -59,15 +66,17 @@ function App() {
         {/* ---------- ADMIN AUTH REDIRECTS ---------- */}
 
         {/* /admin → Login या Dashboard */}
-       <Route
-  path="/admin"
-  element={token ? <Navigate to="/admin/dashboard" replace /> : <Admin />}
-/>
+        <Route
+          path="/admin"
+          element={
+            token ? <Navigate to="/admin/dashboard" replace /> : <Admin />
+          }
+        />
 
-<Route
-  path="/admin/dashboard"
-  element={token ? <Dashboard /> : <Navigate to="/admin" replace />}
-/>
+        <Route
+          path="/admin/dashboard"
+          element={token ? <Dashboard /> : <Navigate to="/admin" replace />}
+        />
 
         {/* Other admin protected routes */}
         <Route
@@ -105,11 +114,9 @@ function App() {
           }
         />
 
-  <Route
+        <Route
           path="/customer-orderlisting"
-          element={
-            token ? <Orderlisting /> : <Navigate to="/admin" replace />
-          }
+          element={token ? <Orderlisting /> : <Navigate to="/admin" replace />}
         />
 
         <Route
@@ -138,7 +145,7 @@ function App() {
           path="/addbanner"
           element={token ? <AddBanner /> : <Navigate to="/admin" replace />}
         />
- <Route
+        <Route
           path="/orderdetails/:id"
           element={token ? <OrderDetails /> : <Navigate to="/admin" replace />}
         />
@@ -147,10 +154,22 @@ function App() {
           path="/addspecial"
           element={token ? <AddSpecial /> : <Navigate to="/admin" replace />}
         />
+           <Route
+          path="/vendorlisting"
+          element={token ? <AdminVendor /> : <Navigate to="/admin" replace />}
+        />
         <Route
           path="/banneredit/:id"
           element={token ? <BannerEdit /> : <Navigate to="/admin" replace />}
         />
+
+        {/* Vendor page header---------------------------------------------- */}
+         {/* <Route
+          path="/addspecial"
+          element={token ? <AddSpecial />/>}
+        /> */}
+
+
 
         {/* ---------- WEBSITE ROUTES ---------- */}
         <Route path="/" element={<Layout />}>
@@ -164,6 +183,8 @@ function App() {
           <Route path="/addcart" element={<Addcart />} />
           <Route path="/product/:id" element={<Alldetail />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/vendor-login" element={<VendorLogin />} />
+          <Route path="/vendor-verify-otp" element={<VendorVerifyOtp />} />
           <Route path="/login" element={<Login />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/shopdetails" element={<ShopDetails />} />
@@ -173,9 +194,11 @@ function App() {
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/order-list" element={<MyOrder />} />
           <Route path="/category-all/:slug" element={<CategoryshopAlls />} />
           <Route path="/success" element={<PaymentSuccess />} />
           <Route path="/cancel" element={<PaymentFailed />} />
+          <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/testing" element={<Testing />} />
         </Route>
       </Routes>

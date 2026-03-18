@@ -1,24 +1,20 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 
 export default function Testing() {
-    const [count,setCount]=useState(0);
-    const [showdata,setShowdata]=useState();
-   const myRef= React.useRef();
-   const HandelSubmit =()=>{
-    alert(myRef.current.value);
-   }
- 
+  const [users,setUsers]=useState([]);
+  useEffect(()=>{
+    axios.get("https://jsonplaceholder.typicode.com/users")
+    .then((res)=>{
+      setUsers(res.data)
+    });
+  },[])
   return (
     <div>
-      <h4>vaibhav</h4>
-      <button onClick={()=>setCount(count +1)}>
-        Increase = {count}
-      </button>
-     <input type="text"
-     ref={myRef}
-      />
-      <button onClick={HandelSubmit}>Submit</button>
-    
+     <h4>my data</h4>
+      {users.map((user)=>(
+        <h4 key={user}>{user.name}</h4>
+      ))}
     </div>
   );
 }

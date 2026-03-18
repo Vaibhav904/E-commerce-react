@@ -9,19 +9,25 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action) => {
-      const item = action.payload;
-      const existing = state.cart.find((i) => i.product_id === item.product_id);
+  const item = action.payload;
 
-      if (existing) {
-        existing.quantity += 1;
-      } else {
-        state.cart.push({ ...item, quantity: 1 });
-      }
-    },
+  const existing = state.cart.find(
+    (i) =>
+      i.product_id === item.product_id &&
+      i.variant_id === item.variant_id &&
+      JSON.stringify(i.variant_attribute_id) ===
+        JSON.stringify(item.variant_attribute_id)
+  );
 
-    setCartFromApi: (state, action) => {
-      state.cart = action.payload;
-    },
+  if (existing) {
+    existing.quantity += item.quantity; // ✅ use selected quantity
+  } else {
+    state.cart.push({
+      ...item,
+      quantity: item.quantity, // ✅ use selected quantity
+    });
+  }
+},
 
     decreaseQty: (state, action) => {
       const product_id = action.payload;
