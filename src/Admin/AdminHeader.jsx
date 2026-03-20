@@ -29,9 +29,9 @@ const AdminHeader = () => {
       </div>
 
       <div className="user-profile">
-        <div className="notifications">
+        {/* <div className="notifications">
           <FaBell />
-        </div>
+        </div> */}
         <div className="user-img">AJ</div>
 
         <div style={{ position: "relative", display: "inline-block" }}>

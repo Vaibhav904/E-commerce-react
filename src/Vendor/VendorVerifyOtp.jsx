@@ -29,7 +29,9 @@ export default function VendorVerifyOtp() {
         localStorage.removeItem("vendorEmail");
 
         // 👉 redirect to login
-        window.location.href = "/vendor-auth";
+        // window.location.href = "/vendor-auth";
+        window.location.href = "/vendor-login";
+
       }
     } catch (err) {
       setMessage("❌ " + err.response?.data?.message);

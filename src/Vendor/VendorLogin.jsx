@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function VendorAuth() {
   const [isLogin, setIsLogin] = useState(true);
-
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -18,6 +19,7 @@ export default function VendorAuth() {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+   const token = localStorage.getItem("token");
 
   // Handle Input Change
   const handleChange = (e) => {
@@ -31,31 +33,55 @@ export default function VendorAuth() {
   };
 
   // ================= LOGIN =================
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setMessage("");
 
-    try {
-      const res = await axios.post(
-        "http://tech-shop.techsaga.live/api/vendor-login",
-        {
-          email: formData.email.trim(),
-          password: formData.password.trim(),
+  try {
+    const res = await axios.post(
+      "http://tech-shop.techsaga.live/api/vendor-login",
+      {
+        email: formData.email.trim(),
+        password: formData.password.trim(),
+      },
+      {
+        headers: {
+          Accept: "application/json",
         },
-      );
-
-      if (res.data.status) {
-        localStorage.setItem("vendorToken", res.data.data.token);
-        setMessage("✅ Login Successful");
       }
-    } catch (err) {
+    );
+
+    console.log("RESPONSE 👉", res.data);
+
+    if (res.data.status) {
+      const token = res.data?.data?.token;
+
+      if (token) {
+        localStorage.setItem("vendorToken", token); // ✅ correct key
+        console.log("TOKEN SAVED 👉", token);
+
+        setMessage("✅ Login Successful");
+        navigate("/vendor/dashboard");
+      } else {
+        setMessage("❌ Token not found");
+      }
+    }
+  } catch (err) {
+    console.log("ERROR 👉", err.response);
+
+    // Laravel validation error show
+    if (err.response?.status === 422) {
+      const errors = err.response.data.errors;
+      const firstError = Object.values(errors)[0][0];
+      setMessage("❌ " + firstError);
+    } else {
       setMessage("❌ " + err.response?.data?.message);
     }
+  }
 
-    setLoading(false);
-  };
-
+  setLoading(false);
+};
   // ================= REGISTER =================
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -63,6 +89,7 @@ export default function VendorAuth() {
     setMessage("");
 
     try {
+
       const form = new FormData();
 
       // Required fields
@@ -97,7 +124,7 @@ export default function VendorAuth() {
 
         // 👉 email save (OTP page ke liye)
         localStorage.setItem("vendorEmail", formData.email);
-
+        // navigate('/vendor/dashboard')
         // 👉 redirect to OTP page
         window.location.href = "/vendor-verify-otp";
       }

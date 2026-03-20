@@ -20,6 +20,7 @@ import Login from "./pages/Login";
 import ShopDetails from "./pages/ShopDetails";
 import Contact from "./pages/Contact";
 import Dashboard from "./Admin/Dashboard";
+import VendorDashboard from "./Vendor/VendarAdmin/Dashboard";
 import Testing from "./pages/Testing";
 import Adminproduct from "./Admin/Adminproduct";
 import Analytics from "./Admin/Analytics";
@@ -54,11 +55,21 @@ import MyOrder from "./pages/MyOrder";
 import VendorLogin from "./Vendor/VendorLogin";
 import VendorVerifyOtp from "./Vendor/VendorVerifyOtp";
 import AdminVendor from "./Admin/AdminVendor";
-
-
+import VendarOrder from "./Vendor/VendarAdmin/Order";
+import VendorAdminproduct from "./Vendor/VendarAdmin/Adminproduct";
+import VendarOrderlisting from "./Vendor/VendarAdmin/Orderlisting";
+import VenderProductAdd from "./Vendor/VendarAdmin/ProductAdd";
+import VenderProductEdit from "./Vendor/VendarAdmin/ProductEdit";
 
 function App() {
   const { token } = useContext(AuthContext); // 🔥 token check
+  const vendorToken = localStorage.getItem("vendorToken");
+
+  const ProtectedVendorRoute = ({ children }) => {
+    const vendorrToken = localStorage.getItem("vendorToken");
+
+    return vendorrToken ? children : <Navigate to="/vendor-login" replace />;
+  };
 
   return (
     <BrowserRouter>
@@ -154,7 +165,7 @@ function App() {
           path="/addspecial"
           element={token ? <AddSpecial /> : <Navigate to="/admin" replace />}
         />
-           <Route
+        <Route
           path="/vendorlisting"
           element={token ? <AdminVendor /> : <Navigate to="/admin" replace />}
         />
@@ -164,12 +175,10 @@ function App() {
         />
 
         {/* Vendor page header---------------------------------------------- */}
-         {/* <Route
+        {/* <Route
           path="/addspecial"
           element={token ? <AddSpecial />/>}
         /> */}
-
-
 
         {/* ---------- WEBSITE ROUTES ---------- */}
         <Route path="/" element={<Layout />}>
@@ -200,6 +209,120 @@ function App() {
           <Route path="/cancel" element={<PaymentFailed />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/testing" element={<Testing />} />
+
+          {/* seller route */}
+        </Route>
+        <Route>
+          <Route
+            path="/vendor/dashboard"
+            element={
+              <ProtectedVendorRoute>
+                <VendorDashboard />
+              </ProtectedVendorRoute>
+            }
+          />
+
+          {/* Other admin protected routes */}
+          <Route
+            path="/vendor/products"
+            // element={
+            //   vendorToken ? (
+            //     <VendorAdminproduct />
+            //   ) : (
+            //     <Navigate to="/vendor" replace />
+            //   )
+            // }/
+            element={
+              <ProtectedVendorRoute>
+                <VendorAdminproduct />
+              </ProtectedVendorRoute>
+            }
+          />
+          <Route
+            path="/vendor/Category"
+            element={
+              // vendorToken ? <VendarOrder /> : <Navigate to="/vendor" replace />
+              <ProtectedVendorRoute>
+                <VendarOrder />
+              </ProtectedVendorRoute>
+            }
+          />
+
+          <Route
+            path="/edit"
+            element={
+              // vendorToken ? <Edit /> : <Navigate to="/vendor" replace />
+              <ProtectedVendorRoute>
+                <Edit />
+              </ProtectedVendorRoute>
+            }
+          />
+
+          <Route
+            path="/settings"
+            element={
+              <ProtectedVendorRoute>
+                <Settings />
+              </ProtectedVendorRoute>
+              // vendorToken ? <Settings /> : <Navigate to="/vendor" replace />
+            }
+          />
+
+          <Route
+            path="/orderdetails/:id"
+            element={
+              <ProtectedVendorRoute>
+                <OrderDetails />
+              </ProtectedVendorRoute>
+              // vendorToken ? <OrderDetails /> : <Navigate to="/vendor" replace />
+            }
+          />
+          <Route
+            path="/vendar-orderlisting"
+            element={
+              <ProtectedVendorRoute>
+                <VendarOrderlisting />
+              </ProtectedVendorRoute>
+              // vendorToken ? (
+              //   <VendarOrderlisting />
+              // ) : (
+              //   <Navigate to="/vendor" replace />
+              // )
+            }
+          />
+
+          <Route
+            path="/vender-productadd"
+            element={
+              <ProtectedVendorRoute>
+                <VenderProductAdd />
+              </ProtectedVendorRoute>
+              // vendorToken ? <ProductAdd /> : <Navigate to="/vendor" replace />
+            }
+          />
+
+          <Route
+            path="/vender-productedit/:id"
+            element={
+              <ProtectedVendorRoute>
+                <VenderProductEdit />
+              </ProtectedVendorRoute>
+              // vendorToken ? <ProductEdit /> : <Navigate to="/vendor" replace />
+            }
+          />
+          <Route
+            path="/specialedit/:id"
+            element={
+              <ProtectedVendorRoute>
+                <SpecialProductEdit />
+              </ProtectedVendorRoute>
+              // vendorToken ? (
+              //   <SpecialProductEdit />
+              // ) : (
+              //   <Navigate to="/vendor" replace />
+              // )
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>
