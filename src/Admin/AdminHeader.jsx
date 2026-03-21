@@ -4,7 +4,8 @@ import { FaBell } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faStore } from "@fortawesome/free-solid-svg-icons";
 const AdminHeader = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -32,7 +33,9 @@ const AdminHeader = () => {
         {/* <div className="notifications">
           <FaBell />
         </div> */}
-        <div className="user-img">AJ</div>
+        <div className="user-img">
+            <FontAwesomeIcon icon={faUser} title="User" />
+        </div>
 
         <div style={{ position: "relative", display: "inline-block" }}>
           <button
@@ -48,7 +51,7 @@ const AdminHeader = () => {
               gap: "4px",
             }}
           >
-            Admin User <IoMdArrowDropdown />
+            Logged In <IoMdArrowDropdown />
           </button>
 
           {open && (

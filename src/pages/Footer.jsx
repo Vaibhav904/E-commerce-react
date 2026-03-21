@@ -45,7 +45,7 @@ export default function Footer() {
               <Link to="/order-tracking">Order Tracking</Link>
             </li>
              <li>
-              <Link to="/vendor-login">Add Vendor's </Link>
+              <Link to="/vendor-login">Vendor Login</Link>
             </li>
           </ul>
         </div>

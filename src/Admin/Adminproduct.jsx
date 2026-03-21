@@ -263,7 +263,7 @@
 import React, { useEffect, useState } from "react";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import axios from "axios";
 
@@ -272,45 +272,83 @@ export default function Adminproduct() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");  // Add state for search term
   const token = localStorage.getItem("token");
-
+  const { state } = useLocation();
+  const { customerId } = state || {};
   // Fetch products from API
+  // const fetchProducts = async (searchQuery = "") => {
+  //   try {
+  //     setLoading(true);
+
+  //     // Fetch products with search query
+  //     const res = await fetch(
+  //       `${process.env.REACT_APP_TECHSHOP_API_BASE_URL}/products?search=${searchQuery}`,
+  //       {
+  //         headers: {
+  //           Accept: "application/json",
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (!res.ok) {
+  //       console.log("API ERROR:", res.status);
+  //       throw new Error(`API Failed: ${res.status}`);
+  //     }
+
+  //     const result = await res.json();
+  //     console.log("API RESULT:", result);
+
+  //     if (result.status && Array.isArray(result.data)) {
+  //       setData(result.data);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching products:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
   const fetchProducts = async (searchQuery = "") => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      // Fetch products with search query
-      const res = await fetch(
-        `${process.env.REACT_APP_TECHSHOP_API_BASE_URL}/products?search=${searchQuery}`,
-        {
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+    // ✅ Base URL
+    let url = `${process.env.REACT_APP_TECHSHOP_API_BASE_URL}/products?search=${searchQuery}`;
 
-      if (!res.ok) {
-        console.log("API ERROR:", res.status);
-        throw new Error(`API Failed: ${res.status}`);
-      }
-
-      const result = await res.json();
-      console.log("API RESULT:", result);
-
-      if (result.status && Array.isArray(result.data)) {
-        setData(result.data);
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
+    // ✅ Agar customerId hai to add karo
+    if (customerId) {
+      url += `&vendor_id=${customerId}`;
     }
-  };
+
+    const res = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`API Failed: ${res.status}`);
+    }
+
+    const result = await res.json();
+
+    if (result.status && Array.isArray(result.data)) {
+      setData(result.data);
+    }
+  } catch (error) {
+    console.error("Error fetching products:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchProducts();  // Initial load with no search query
-  }, []);
+  }, [customerId]);
 
   // Handle Search Input Change
   const handleSearch = (event) => {

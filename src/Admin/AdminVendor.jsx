@@ -238,6 +238,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function AdminVendor() {
   const [vendors, setVendors] = useState([]);
@@ -249,9 +250,10 @@ export default function AdminVendor() {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [commission, setCommission] = useState("");
   const [verifiedIds, setVerifiedIds] = useState([]);
-
+  // const { state } = useLocation();
+  // const { customerId } = state || {};
   const token = localStorage.getItem("token");
-
+ const navigate = useNavigate();
   // 🔹 Fetch Vendors
   const getVendors = async (query = "") => {
     try {
@@ -381,7 +383,15 @@ const handleDownloadCSV = () => {
   link.click();
   document.body.removeChild(link);
 };
-
+const handleTotalProductsClick = (id)=>{
+   console.log("Navigating to order details for customer ID:", id);
+    navigate('/adminproducts', { state: { customerId: id } });
+}
+const handleTotalOrdersClick = (id)=>{
+   console.log("Navigating to order details for Order ID:", id);
+    navigate('/customer-orderlisting', { state: { OrderId: id } });
+}
+// handleTotalOrdersClick
 
 
   return (
@@ -390,7 +400,7 @@ const handleDownloadCSV = () => {
       <div className="dash-header w-100">
         <AdminHeader />
 
-        <div className="container-fluid mt-4">
+        <div className="container mt-4">
           <h2 className="dashboard-title mb-4">Vendor Listing</h2>
 
           <div className="d-flex justify-content-between mb-3">
@@ -461,8 +471,22 @@ const handleDownloadCSV = () => {
                           )}
                         </td>
 
-                        <td>{vendor.total_products}</td>
-                        <td>{vendor.total_purchased}</td>
+                        <td>
+                         <button   onClick={() =>
+                                    handleTotalProductsClick(vendor.id)
+                                  }  className="btn btn-link">
+                          {vendor.total_products}
+                          </button> 
+                          {/* {vendor.total_products} */}
+                          </td>
+                        <td>
+                          
+                            <button   onClick={() =>
+                                    handleTotalOrdersClick(vendor.id)
+                                  }  className="btn btn-link">
+                          {vendor.total_purchased}
+                          </button>
+                          </td>
                       </tr>
                     ))
                   ) : (

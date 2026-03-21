@@ -126,7 +126,17 @@ const handleDownloadCSV = () => {
   link.click();
   document.body.removeChild(link);
 };
-
+const formatDate = (timestamp) => {
+  const date = new Date(timestamp); // Parse ISO string
+  return date.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true, // Use 12-hour format with AM/PM
+  });
+};
   return (
     <div className="d-flex">
       <AdminSidebar />
@@ -134,7 +144,7 @@ const handleDownloadCSV = () => {
       <div className="dash-header w-100">
         <AdminHeader />
 
-        <div className="container-fluid mt-4">
+        <div className="container mt-4">
           <h2 className="dashboard-title mb-4">Customer Overview</h2>
           <div className="d-flex justify-content-between mb-4">
           <div className=" col-md-3">
@@ -167,6 +177,7 @@ const handleDownloadCSV = () => {
                         <th>Name</th>
                         <th>Email</th>
                         <th>Phone</th>
+                        <th>Date</th>
                         <th>Status</th>
                         <th>Verified</th>
                         <th>Orders</th>
@@ -179,6 +190,7 @@ const handleDownloadCSV = () => {
                           <td>{item.name}</td>
                           <td>{item.email}</td>
                           <td>{item.phone_number}</td>
+                          <td>{formatDate(item.created_at)}</td>
 
                           {/* ===== ACTIVE / INACTIVE BUTTON ===== */}
                           <td>

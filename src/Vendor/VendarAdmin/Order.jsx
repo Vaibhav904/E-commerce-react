@@ -280,7 +280,33 @@ const handleDelete = async (id) => {
     //   ),
     // },
   ];
+// Place this inside your component, e.g., after useState declarations
+const exportToCSV = (dataArray, filename = "categories.csv") => {
+  if (!dataArray || !dataArray.length) {
+    alert("No data to export!");
+    return;
+  }
 
+  const headers = ["ID", "Parent Category", "Child Category", "Status", "Display"];
+  const rows = dataArray.map((row) => [
+    row.id,
+    row.parent === 0 ? row.category_name : data.find((p) => p.id === row.parent)?.category_name || "Unknown",
+    row.parent !== 0 ? row.category_name : "—",
+    row.status === 1 ? "Active" : "Inactive",
+    row.is_display === 1 ? "Display" : "No Display",
+  ]);
+
+  const csvContent =
+    [headers, ...rows]
+      .map((e) => e.map((v) => `"${v}"`).join(","))
+      .join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+};
   return (
     <div className="d-flex">
       <AdminSidebar />
@@ -291,6 +317,14 @@ const handleDelete = async (id) => {
         <h2 className="dashboard-title">My Category Overview</h2>
 
         <div className="container">
+          <div className="text-end">
+            <button
+              className="btn btn-primary mb-3"
+              onClick={() => exportToCSV(data)}
+            >
+              Export CSV
+            </button>
+          </div>
           {/* <div className="add-product">
             <Link to={`/addCategory`}>Add Category / SubCategory</Link>
           </div> */}

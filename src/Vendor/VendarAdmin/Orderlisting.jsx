@@ -43,6 +43,34 @@ export default function Orderlisting() {
     }
   }, [page, vendorToken]);
 
+
+const exportOrdersToCSV = (ordersArray, filename = "orders.csv") => {
+  if (!ordersArray || !ordersArray.length) {
+    alert("No orders to export!");
+    return;
+  }
+
+  const headers = ["Order ID", "Date", "Status", "Total", "Items"];
+  const rows = ordersArray.map((order) => [
+    order.order_id,
+    order.created_at,
+    order.status,
+    order.total,
+    order.items.map(item => `${item.product_name} × ${item.quantity}`).join(" | "),
+  ]);
+
+  const csvContent = [headers, ...rows]
+    .map(row => row.map(value => `"${value}"`).join(","))
+    .join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+};
+
+
   return (
     <div className="d-flex">
       <AdminSidebar />
@@ -50,11 +78,18 @@ export default function Orderlisting() {
       <div className="dash-header w-100">
         <AdminHeader />
 
-        <div className="container-fluid mt-4">
+        <div className="container mt-4">
           <h2 className="dashboard-title mb-4">
             Customer Order Listing
           </h2>
-
+          <div className="text-end">
+          <button
+              className="btn btn-primary mb-3"
+              onClick={() => exportOrdersToCSV(orders)}
+            >
+              Export CSV
+            </button>
+          </div>
           {loading ? (
             <p>Loading orders...</p>
           ) : (

@@ -296,7 +296,7 @@ const handleDownloadCSV = () => {
       <div className="dash-header w-100">
         <AdminHeader />
 
-        <div className="container-fluid mt-4">
+        <div className="container mt-4">
           <h2 className="dashboard-title mb-4">Customer Order Listing</h2>
 <div className="d-flex justify-content-between mb-3">
           {/* Search Input */}
