@@ -125,9 +125,9 @@ export default function Header() {
           <a href="">Discover More</a>
         </div>
 
-        <div className="header-state">
+        {/* <div className="header-state">
           <CountrySelector />
-        </div>
+        </div> */}
       </div>
 
       {/* ================= MAIN HEADER ================= */}
@@ -224,12 +224,12 @@ export default function Header() {
                   <ul>
                     <li onClick={handleOrders}>Orders</li>
                     <li onClick={() => navigate("/wishlist")}>Wishlist</li>
-                    <li>Gift Cards</li>
-                    <li>Contact Us</li>
-                    <li>Coupons</li>
-                    <li onClick={() => navigate("/address")}>
+                    {/* <li>Gift Cards</li>
+                    <li>Contact Us</li> */}
+                    {/* <li>Coupons</li> */}
+                    {/* <li onClick={() => navigate("/address")}>
                       Saved Addresses
-                    </li>
+                    </li> */}
                     <li onClick={() => navigate("/profile")}>Edit Profile</li>
                     <li
                       className="logout"

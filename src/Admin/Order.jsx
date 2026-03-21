@@ -7,15 +7,25 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 
 export default function Order() {
+    const [searchTerm, setSearchTerm] = useState("");  // Added state for search term
+
   const [data, setData] = useState([]);
 
   const token = localStorage.getItem("token");
 
   // Fetch Categories
-  const fetchCategories = async () => {
+const handleSearch = (event) => {
+    const query = event.target.value;
+    setSearchTerm(query);
+    fetchCategories(query);  // Fetch categories based on the search term
+  };
+  
+  const fetchCategories = async (searchQuery = "") => {
     try {
       const res = await axios.get(
-        "http://tech-shop.techsaga.live/api/v1/category/categoryListing",
+        `http://tech-shop.techsaga.live/api/v1/category/categoryListing?search=${searchQuery}`,
+
+        // "http://tech-shop.techsaga.live/api/v1/category/categoryListing",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -30,10 +40,6 @@ export default function Order() {
   useEffect(() => {
     fetchCategories();
   }, []);
-
-
-
-
 
 
 
@@ -80,14 +86,6 @@ const handleDisplayToggle = async (id, currentDisplay) => {
     alert("Failed to update display status!");
   }
 };
-
-
-
-
-
-
-
-
 
 
 
@@ -289,6 +287,23 @@ const handleDelete = async (id) => {
         <h2 className="dashboard-title">Category Overview</h2>
 
         <div className="container">
+
+
+          {/* Search Input */}
+          <input
+            type="text"
+            placeholder="Search by name"
+            value={searchTerm}
+            onChange={handleSearch}  // Trigger search on input change
+            style={{
+              padding: "8px",
+              marginBottom: "20px",
+              borderRadius: "4px",
+              width: "200px",
+              border: "1px solid #ccc",
+            }}
+          />
+
           <div className="add-product">
             <Link to={`/addCategory`}>Add Category / SubCategory</Link>
           </div>

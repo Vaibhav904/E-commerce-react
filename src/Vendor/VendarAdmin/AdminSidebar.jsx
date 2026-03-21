@@ -39,6 +39,12 @@ const AdminSidebar = () => {
       label: "Order Listing",
       path: "/vendar-orderlisting",
     },
+      {
+      id: "vendorearnings",
+      icon: <CiCircleList />,
+      label: "Vendor-Earnings",
+      path: "/vendor/vendor-earnings",
+    },
     // { id: "settings", icon: <FaCog />, label: "Settings", path: "/settings" },
   ];
 

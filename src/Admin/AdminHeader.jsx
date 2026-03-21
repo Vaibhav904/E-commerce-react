@@ -63,9 +63,9 @@ const AdminHeader = () => {
                 width: "140px",
               }}
             >
-              <div style={itemStyle} onClick={() => alert("Open Profile")}>
+              {/* <div style={itemStyle} onClick={() => alert("Open Profile")}>
                 Profile
-              </div>
+              </div> */}
               <div style={itemStyle} onClick={handleLogout}>
                 Logout
               </div>

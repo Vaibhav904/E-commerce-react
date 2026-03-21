@@ -50,6 +50,7 @@ import SpecialProductEdit from "./Admin/SpecialProductEdit";
 import CategoryshopAlls from "./pages/CategoryshopAll";
 import Orderlisting from "./Admin/Orderlisting";
 import OrderDetails from "./Admin/OrderDetails";
+import CustomerOrderDetails from "./Admin/CustomerOrderDetails";
 import Wishlist from "./pages/Wishlist";
 import MyOrder from "./pages/MyOrder";
 import VendorLogin from "./Vendor/VendorLogin";
@@ -60,6 +61,8 @@ import VendorAdminproduct from "./Vendor/VendarAdmin/Adminproduct";
 import VendarOrderlisting from "./Vendor/VendarAdmin/Orderlisting";
 import VenderProductAdd from "./Vendor/VendarAdmin/ProductAdd";
 import VenderProductEdit from "./Vendor/VendarAdmin/ProductEdit";
+import EarningsVendor from "./Vendor/VendarAdmin/EarningsVendor";
+import VendorPayment from "./Admin/VendorPayment";
 
 function App() {
   const { token } = useContext(AuthContext); // 🔥 token check
@@ -160,6 +163,10 @@ function App() {
           path="/orderdetails/:id"
           element={token ? <OrderDetails /> : <Navigate to="/admin" replace />}
         />
+        <Route
+          path="/customerorderdetails/:id"
+          element={token ? <CustomerOrderDetails /> : <Navigate to="/admin" replace />}
+        />
 
         <Route
           path="/addspecial"
@@ -169,6 +176,11 @@ function App() {
           path="/vendorlisting"
           element={token ? <AdminVendor /> : <Navigate to="/admin" replace />}
         />
+          <Route
+          path="/vendorpayment"
+          element={token ? <VendorPayment /> : <Navigate to="/admin" replace />}
+        />
+
         <Route
           path="/banneredit/:id"
           element={token ? <BannerEdit /> : <Navigate to="/admin" replace />}
@@ -225,19 +237,24 @@ function App() {
           {/* Other admin protected routes */}
           <Route
             path="/vendor/products"
-            // element={
-            //   vendorToken ? (
-            //     <VendorAdminproduct />
-            //   ) : (
-            //     <Navigate to="/vendor" replace />
-            //   )
-            // }/
             element={
               <ProtectedVendorRoute>
                 <VendorAdminproduct />
               </ProtectedVendorRoute>
             }
           />
+
+
+            <Route
+            path="/vendor/vendor-earnings"
+            element={
+              <ProtectedVendorRoute>
+                <EarningsVendor/>
+              </ProtectedVendorRoute>
+            }
+          />
+
+
           <Route
             path="/vendor/Category"
             element={

@@ -2,21 +2,26 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Customer() {
   const [customers, setCustomers] = useState([]);
+    const [searchTerm, setSearchTerm] = useState(""); // Added search term state
+
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
-
+const navigate = useNavigate();
   useEffect(() => {
     fetchCustomers();
   }, []);
 
   // ================= FETCH CUSTOMERS =================
-  const fetchCustomers = async () => {
+  const fetchCustomers = async (query = "") => {
     try {
       const res = await axios.get(
-        "http://tech-shop.techsaga.live/api/v1/customers",
+        `http://tech-shop.techsaga.live/api/v1/customers?search=${query}`, // API with search query
+
+        // "http://tech-shop.techsaga.live/api/v1/customers",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -27,6 +32,14 @@ export default function Customer() {
     } finally {
       setLoading(false);
     }
+  };
+
+
+ // ================= HANDLE SEARCH =================
+  const handleSearch = (event) => {
+    const query = event.target.value;
+    setSearchTerm(query);
+    fetchCustomers(query); // Fetch filtered customers
   };
 
   // ================= STATUS TOGGLE =================
@@ -67,6 +80,53 @@ export default function Customer() {
     }
   };
 
+ const handleOrderDetailsClick = (id) => {
+    // Logging the customer ID (just for debugging)
+    console.log("Navigating to order details for customer ID:", id);
+    
+    // Navigating with the customer id passed to the order details page
+    navigate('/customer-orderlisting', { state: { customerId: id } });
+  };
+
+
+// ================= DOWNLOAD CSV =================
+const handleDownloadCSV = () => {
+  if (!customers.length) {
+    alert("No data to download");
+    return;
+  }
+
+  // CSV header
+  const headers = ["ID", "Name", "Email", "Phone", "Status", "Verified", "Orders Count"];
+
+  // CSV rows
+  const rows = customers.map((item) => [
+    item.id,
+    item.name,
+    item.email,
+    item.phone_number,
+    item.status === 1 ? "Active" : "Inactive",
+    item.is_verified === 1 ? "Verified" : "Not Verified",
+    item.orders?.length || 0,
+  ]);
+
+  // Convert array to CSV string
+  const csvContent =
+    [headers, ...rows]
+      .map((e) => e.join(","))
+      .join("\n");
+
+  // Create a blob and trigger download
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "customers.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
   return (
     <div className="d-flex">
       <AdminSidebar />
@@ -76,7 +136,24 @@ export default function Customer() {
 
         <div className="container-fluid mt-4">
           <h2 className="dashboard-title mb-4">Customer Overview</h2>
-
+          <div className="d-flex justify-content-between mb-4">
+          <div className=" col-md-3">
+            <input
+              type="text"
+              placeholder="Search by name, email, or phone"
+              value={searchTerm}
+              onChange={handleSearch}
+              className="form-control"
+            />
+            
+          </div>
+          <button
+            className="btn btn-primary mt-md-0 mt-3"
+            onClick={handleDownloadCSV}
+          >
+            Download CSV
+          </button>
+        </div>
           <div className="card shadow-sm">
             <div className="card-body">
               {loading ? (
@@ -92,14 +169,14 @@ export default function Customer() {
                         <th>Phone</th>
                         <th>Status</th>
                         <th>Verified</th>
-                        <th>Created</th>
+                        <th>Orders</th>
                       </tr>
                     </thead>
                     <tbody>
                       {customers.map((item, index) => (
                         <tr key={item.id}>
                           <td>{index + 1}</td>
-                          <td>{item.first_name}</td>
+                          <td>{item.name}</td>
                           <td>{item.email}</td>
                           <td>{item.phone_number}</td>
 
@@ -135,9 +212,34 @@ export default function Customer() {
                             )}
                           </td>
 
+                          {/* <td>
+                             {item.orders?.length === 0 ? (
+                            <p>No Orders</p>
+                          ) : (
+                           
+                            <button
+                                onClick={() => handleOrderDetailsClick(item.id)} // Trigger the click handler
+                                className="btn btn-link"
+                              >
+                                Order Details
+                              </button>
+                          )}
+                         
+                          </td> */}
                           <td>
-                            {new Date(item.created_at).toLocaleDateString()}
-                          </td>
+                              {item.orders?.length === 0 ? (
+                                <p>No Orders</p>
+                              ) : (
+                                <button
+                                  onClick={() =>
+                                    handleOrderDetailsClick(item.id)
+                                  }
+                                  className="btn btn-link"
+                                >
+                                  Order Details
+                                </button>
+                              )}
+                            </td>
                         </tr>
                       ))}
                     </tbody>

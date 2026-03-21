@@ -16,10 +16,7 @@ const AdminHeader = () => {
     // logout(); // token remove + login state false
     setOpen(false);
   
-
-    // 🚫 window.location.href — refresh karta hai (avoid)
-    // ✅ navigate — bina refresh ke page change karega
-    navigate("/admin");
+    navigate("/vendor-login");
   };
 
   return (
@@ -65,9 +62,9 @@ const AdminHeader = () => {
                 width: "140px",
               }}
             >
-              <div style={itemStyle} onClick={() => alert("Open Profile")}>
+              {/* <div style={itemStyle} onClick={() => alert("Open Profile")}>
                 Profile
-              </div>
+              </div> */}
               <div style={itemStyle} onClick={vendorHandleLogout}>
                 Logout
               </div>

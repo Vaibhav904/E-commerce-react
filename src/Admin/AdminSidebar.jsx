@@ -22,7 +22,8 @@ const AdminSidebar = () => {
     { id: "customers", icon: <FaUsers />, label: "Customers",  path: "/customer" },
      { id: "Specialproduct", icon: <FaUsers />, label: "Special Product",  path: "/Specialproduct" },
       { id: "orderlisting", icon: <CiCircleList />, label: "Order Listing",  path: "/customer-orderlisting" },
-    { id: "vendorlisting", icon: <FaChartLine />, label: "vendor-listing",  path: "/vendorlisting" },
+    { id: "vendorlisting", icon: <FaChartLine />, label: "Vendor-Listing",  path: "/vendorlisting" },
+    { id: "vendorpayment", icon: <FaChartLine />, label: "Vendor-Payment",  path: "/vendorpayment" },
     // { id: "settings", icon: <FaCog />, label: "Settings", path: "/settings" },
   ];
 

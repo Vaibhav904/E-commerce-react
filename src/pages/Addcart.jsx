@@ -203,7 +203,9 @@ export default function Addcart({ open, close }) {
   };
 
   const handleIncrease = (item) => {
-    dispatch(addToCart(item));
+    const updatedItem = { ...item, quantity: 1 }; // Set quantity to 1
+    // console.log("updatedItem with quantity 1:", updatedItem);
+    dispatch(addToCart(updatedItem)); // Dispatch updatedItem with quantity 1
   };
 
   const handleDecrease = (id) => {

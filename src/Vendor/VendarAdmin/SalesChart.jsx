@@ -43,6 +43,7 @@ const SalesChart = () => {
   //     },
   //   ],
   // };
+   const [trafficData, setTrafficData] = useState(null);
   const [totalSales, setTotalSales] = useState("");
   const [salesComparison, setSalesComparison] = useState("");
   const [totalOrders, setTotalOrders] = useState("");
@@ -51,6 +52,7 @@ const SalesChart = () => {
    const [customerComparison,setCustomerComparison]=useState("");
    const [salesData, setSalesData] = useState(null);
    const [recentOrders, setRecentOrders] = useState([]);
+  
 const vendorToken = localStorage.getItem("vendorToken");
 
 useEffect(() => {
@@ -82,9 +84,11 @@ useEffect(() => {
   axios.get(
     "http://tech-shop.techsaga.live/api/v1/vendor/recent-orders",
     {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+        },
     }
   )
   .then((res) => {
@@ -98,7 +102,7 @@ useEffect(() => {
 
 
 useEffect(() => {
-  const token = localStorage.getItem("token");
+  // const token = localStorage.getItem("token");
 
   axios
     .get("http://tech-shop.techsaga.live/api/v1/vendor/total-orders", {
@@ -123,8 +127,10 @@ useEffect(() => {
   axios
     .get("http://tech-shop.techsaga.live/api/v1/vendor/yearly-sales", {
       headers: {
-        Authorization: `Bearer ${token}`,
-      },
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+        },
     })
     .then((res) => {
       if (res.data.status) {
@@ -156,54 +162,74 @@ useEffect(() => {
 
 
 
-  // TRAFFIC SOURCES DATA
-  const trafficData = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    datasets: [
-      {
-        label: "Direct",
-        data: [120, 190, 170, 220, 200, 180, 210],
-        borderColor: "#4e73df",
-        backgroundColor: "rgba(78,115,223,0.2)",
-        tension: 0.4,
-        fill: true,
-      },
-      {
-        label: "Organic",
-        data: [90, 140, 130, 160, 150, 170, 180],
-        borderColor: "#1cc88a",
-        backgroundColor: "rgba(28,200,138,0.2)",
-        tension: 0.4,
-        fill: true,
-      },
-      {
-        label: "Social",
-        data: [60, 80, 75, 100, 95, 110, 120],
-        borderColor: "#f6c23e",
-        backgroundColor: "rgba(246,194,62,0.2)",
-        tension: 0.4,
-        fill: true,
-      },
-    ],
-  };
+useEffect(() => {
+  const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
+  axios
+    .get("http://tech-shop.techsaga.live/api/v1/analytics/current-year-traffic", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((res) => {
+      const apiData = res.data.data;
 
-    axios
-      .get("http://tech-shop.techsaga.live/api/v1/dashboard/total-orders", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => {
-        if (res.data.status) {
-          setTotalOrders(res.data.formatted_orders);
-          setOrdersComparison(res.data.comparison_text);
-        }
-      })
-      .catch((err) => console.log(err));
-  }, []);
+      // Labels (Months)
+      const labels = apiData.map((item) => item.month);
+
+      // Channels collect karenge
+      const channelsMap = {};
+
+      apiData.forEach((item) => {
+        item.channels.forEach((ch) => {
+          if (!channelsMap[ch.channel]) {
+            channelsMap[ch.channel] = [];
+          }
+          channelsMap[ch.channel].push(ch.sessions); // sessions use kiya
+        });
+      });
+
+      // Colors (optional)
+      const colors = {
+        Direct: "#4e73df",
+        Organic: "#1cc88a",
+        Social: "#f6c23e",
+      };
+
+      // Datasets banana
+      const datasets = Object.keys(channelsMap).map((channel) => ({
+        label: channel,
+        data: channelsMap[channel],
+        borderColor: colors[channel] || "#000",
+        backgroundColor: `${colors[channel] || "#000"}33`,
+        tension: 0.4,
+        fill: true,
+      }));
+
+      setTrafficData({
+        labels,
+        datasets,
+      });
+    })
+    .catch((err) => console.error(err));
+}, []);
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+
+  //   axios
+  //     .get("http://tech-shop.techsaga.live/api/v1/dashboard/total-orders", {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     })
+  //     .then((res) => {
+  //       if (res.data.status) {
+  //         setTotalOrders(res.data.formatted_orders);
+  //         setOrdersComparison(res.data.comparison_text);
+  //       }
+  //     })
+  //     .catch((err) => console.log(err));
+  // }, []);
 
   const options = {
     responsive: true,
@@ -273,12 +299,12 @@ useEffect(() => {
   </div>
 </div>
 
-        <div className="card">
-          <h3>Traffic Sources</h3>
-          <div className="chart-container">
-            <Line data={trafficData} options={options} />
-          </div>
-        </div>
+       <div className="card">
+  <h3>Traffic Sources</h3>
+  <div className="chart-container">
+    {trafficData && <Line data={trafficData} options={options} />}
+  </div>
+</div>
       </div>
 
       {/* RECENT ORDERS */}
