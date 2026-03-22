@@ -125,12 +125,12 @@ export default function EditCategory() {
       <AdminSidebar />
       <div className="dash-header">
         <AdminHeader />
-        <h2 className="dashboard-title">Edit Category / Subcategory</h2>
+        <h2 className="dashboard-title mb-5">Edit Category / Subcategory</h2>
 
         <div className="container-fluid edit-cards">
           <div className="row gy-4">
             <div className="col-md-8">
-              <div className="card">
+              <div className="card card-design_edit">
                 <div className="card-header">
                   <h5 className="card-title mb-0">Update Category</h5>
                 </div>
@@ -225,7 +225,7 @@ export default function EditCategory() {
 
             {/* IMAGE PREVIEW */}
             <div className="col-md-4">
-              <div className="card">
+              <div className="card card-design_edit">
                 <div className="card-header">
                   <h5 className="card-title mb-0">Image Preview</h5>
                 </div>

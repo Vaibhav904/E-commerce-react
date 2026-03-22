@@ -513,6 +513,10 @@ export default function Adminproduct() {
     },
   ];
 
+
+
+
+  
   return (
     <div className="d-flex">
       <AdminSidebar />
@@ -523,25 +527,25 @@ export default function Adminproduct() {
         <h2 className="dashboard-title">Product Overview</h2>
 
         <div className="container">
-          <div className="add-product">
-            <Link to={`/productadd`}>Add Product</Link>
+          <div className="d-flex justify-content-between mb-3 flex-wrap">
+              <input
+                type="text"
+                placeholder="Search by name"
+                value={searchTerm}
+                onChange={handleSearch}
+                style={{
+                  padding: "8px",
+                  marginBottom: "20px",
+                  borderRadius: "4px",
+                  width: "200px",
+                  border: "1px solid #ccc",
+                }}
+              />
+              <div className="add-product">
+                <Link to={`/productadd`}>Add Product</Link>
+              </div>
           </div>
-
-          {/* Search Bar */}
-          <input
-            type="text"
-            placeholder="Search by name"
-            value={searchTerm}
-            onChange={handleSearch}
-            style={{
-              padding: "8px",
-              marginBottom: "20px",
-              borderRadius: "4px",
-              width: "200px",
-              border: "1px solid #ccc",
-            }}
-          />
-
+  <div className="card"> 
           <DataTable
             columns={columns}
             data={data}
@@ -551,6 +555,7 @@ export default function Adminproduct() {
             striped
             responsive
           />
+          </div>
         </div>
       </div>
     </div>

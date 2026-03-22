@@ -239,7 +239,7 @@ const addVariant = () => {
         <AdminHeader />
         <h2 className="dashboard-title">Add Product</h2>
         <div className="container mt-4">
-          <form onSubmit={handleSubmit} className="p-4 bg-white shadow rounded">
+          <form onSubmit={handleSubmit} className="p-4 bg-white shadow rounded card">
             {/* PRODUCT NAME */}
             <input
               className="form-control mb-3"

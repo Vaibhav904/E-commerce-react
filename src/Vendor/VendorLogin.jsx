@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import imageLogo from '../assets/Image/sign-in.jpg'
 
 export default function VendorAuth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -137,135 +138,143 @@ const handleLogin = async (e) => {
   };
 
   return (
-    <div className="container d-flex justify-content-center my-4 align-items-center vh-100">
-      <div className="card p-4 shadow login-vendor">
-        <h3 className="text-center mb-3">
-          {isLogin ? "Vendor Login" : "Vendor Register"}
-        </h3>
+    <div className="container d-flex justify-content-center my-5 align-items-center h-100">
+      <div className="row align-items-center">
+        <div className="col-md-6">
+            <img src={imageLogo} alt="" />
+        </div>
+        <div className="col-md-6">
+            <div className="card p-4 shadow login-vendor">
+              <h3 className="text-center mb-3">
+                {isLogin ? "Vendor Login" : "Vendor Register"}
+              </h3>
 
-        <form onSubmit={isLogin ? handleLogin : handleRegister}>
-          {/* REGISTER FIELDS */}
-          {!isLogin && (
-            <>
-              <div className="row">
-                <div className="col-6">
+              <form onSubmit={isLogin ? handleLogin : handleRegister}>
+                {/* REGISTER FIELDS */}
+                {!isLogin && (
+                  <>
+                    <div className="row">
+                      <div className="col-6">
+                        <input
+                          type="text"
+                          name="first_name"
+                          placeholder="First Name"
+                          className="form-control mb-2"
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                      <div className="col-6">
+                        <input
+                          type="text"
+                          name="last_name"
+                          placeholder="Last Name"
+                          className="form-control mb-2"
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                      <div className="col-md-12">
+                        <input
+                          type="text"
+                          name="phone_number"
+                          placeholder="Phone Number"
+                          className="form-control mb-2"
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* COMMON FIELDS */}
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  className="form-control mb-2"
+                  onChange={handleChange}
+                  required
+                />
+
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  className="form-control mb-2"
+                  onChange={handleChange}
+                  required
+                />
+
+                {!isLogin && (
                   <input
-                    type="text"
-                    name="first_name"
-                    placeholder="First Name"
+                    type="password"
+                    name="confirm_password"
+                    placeholder="Confirm Password"
                     className="form-control mb-2"
                     onChange={handleChange}
                     required
                   />
-                </div>
-                <div className="col-6">
-                  <input
-                    type="text"
-                    name="last_name"
-                    placeholder="Last Name"
-                    className="form-control mb-2"
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="col-md-12">
-                  <input
-                    type="text"
-                    name="phone_number"
-                    placeholder="Phone Number"
-                    className="form-control mb-2"
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-            </>
-          )}
+                )}
 
-          {/* COMMON FIELDS */}
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            className="form-control mb-2"
-            onChange={handleChange}
-            required
-          />
+                {/* OPTIONAL FIELDS */}
+                {!isLogin && (
+                  <>
+                    <input
+                      type="text"
+                      name="business_name"
+                      placeholder="Business Name (Optional)"
+                      className="form-control mb-2"
+                      onChange={handleChange}
+                    />
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            className="form-control mb-2"
-            onChange={handleChange}
-            required
-          />
+                    <input
+                      type="text"
+                      name="gstin_no"
+                      placeholder="GSTIN No (Optional)"
+                      className="form-control mb-2"
+                      onChange={handleChange}
+                    />
+                    <label className="mb-2" htmlFor="file">
+                      Gst Certificate
+                    </label>
+                    <input
+                      type="file"
+                      name="gst_certificate"
+                      placeholder="Upload gst_certificate "
+                      className="form-control mb-2"
+                      onChange={handleChange}
+                    />
+                  </>
+                )}
 
-          {!isLogin && (
-            <input
-              type="password"
-              name="confirm_password"
-              placeholder="Confirm Password"
-              className="form-control mb-2"
-              onChange={handleChange}
-              required
-            />
-          )}
+                <button className="btn btn-dark w-100 mt-2" disabled={loading}>
+                  {loading ? "Please wait..." : isLogin ? "Login" : "Register"}
+                </button>
+              </form>
 
-          {/* OPTIONAL FIELDS */}
-          {!isLogin && (
-            <>
-              <input
-                type="text"
-                name="business_name"
-                placeholder="Business Name (Optional)"
-                className="form-control mb-2"
-                onChange={handleChange}
-              />
+              {message && <p className="text-center mt-3 small">{message}</p>}
 
-              <input
-                type="text"
-                name="gstin_no"
-                placeholder="GSTIN No (Optional)"
-                className="form-control mb-2"
-                onChange={handleChange}
-              />
-              <label className="mb-2" htmlFor="file">
-                Gst Certificate
-              </label>
-              <input
-                type="file"
-                name="gst_certificate"
-                placeholder="Upload gst_certificate "
-                className="form-control mb-2"
-                onChange={handleChange}
-              />
-            </>
-          )}
+              <hr />
 
-          <button className="btn btn-dark w-100 mt-2" disabled={loading}>
-            {loading ? "Please wait..." : isLogin ? "Login" : "Register"}
-          </button>
-        </form>
-
-        {message && <p className="text-center mt-3 small">{message}</p>}
-
-        <hr />
-
-        <p className="text-center">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}
-          <span
-            style={{ cursor: "pointer", color: "blue" }}
-            onClick={() => {
-              setIsLogin(!isLogin);
-              setMessage("");
-            }}
-          >
-            {" "}
-            {isLogin ? "Register" : "Login"}
-          </span>
-        </p>
+              <p className="text-center">
+                {isLogin ? "Don't have an account?" : "Already have an account?"}
+                <span
+                  style={{ cursor: "pointer", color: "blue" }}
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setMessage("");
+                  }}
+                >
+                  {" "}
+                  {isLogin ? "Register" : "Login"}
+                </span>
+              </p>
+            </div>
+            </div>
       </div>
+      
     </div>
   );
 }

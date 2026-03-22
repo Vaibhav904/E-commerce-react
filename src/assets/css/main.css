@@ -4718,6 +4718,9 @@ body.cart-open {
   min-width: 500px;
   width: auto;
 }
+.card-design_edit{
+  border: 1px solid #dedede !important;
+}
 
 
 

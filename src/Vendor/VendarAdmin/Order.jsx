@@ -314,9 +314,9 @@ const exportToCSV = (dataArray, filename = "categories.csv") => {
         <AdminHeader />
         <Outlet />
 
-        <h2 className="dashboard-title">My Category Overview</h2>
+        <h2 className="dashboard-title">My Category Overview </h2>
 
-        <div className="container">
+        <div className="container mb-4">
           <div className="text-end">
             <button
               className="btn btn-primary mb-3"

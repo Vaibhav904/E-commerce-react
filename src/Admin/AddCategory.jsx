@@ -116,12 +116,12 @@ export default function AddCategory() {
       <div className="dash-header">
         <AdminHeader />
         <Outlet />
-        <h2 className="dashboard-title">Add Category / Subcategory</h2>
+        <h2 className="dashboard-title mb-5">Add Category / Subcategory</h2>
 
         <div className="container-fluid edit-cards">
           <div className="row gy-4">
             <div className="col-md-8">
-              <div className="card">
+              <div className="card card-design_edit">
                 <div className="card-header">
                   <h5 className="card-title mb-0">
                     Select Mode & Fill Information
@@ -227,7 +227,7 @@ export default function AddCategory() {
 
             {/* PREVIEW */}
             <div className="col-md-4">
-              <div className="card">
+              <div className="card card-design_edit">
                 <div className="card-header">
                   <h5 className="card-title mb-0">Image Preview</h5>
                 </div>
@@ -241,6 +241,7 @@ export default function AddCategory() {
                     className="img-fluid rounded"
                     alt="Preview"
                   />
+                  
                 </div>
               </div>
             </div>

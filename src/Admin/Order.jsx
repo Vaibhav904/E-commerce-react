@@ -315,7 +315,7 @@ const handleDelete = async (id) => {
             highlightOnHover
             striped
             responsive
-            className="custom-datagrid"
+            className="custom-datagrid card"
           />
         </div>
       </div>

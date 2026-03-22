@@ -290,8 +290,8 @@ export default function ProductEdit() {
       <AdminSidebar />
       <div className="dash-header w-100">
         <AdminHeader />
-        <div className="container mt-4">
-          <h2>V Edit Product</h2>
+        <div className="container my-4">
+          <h2 className="dashboard-title">Vendor Edit Product</h2>
 
           <form onSubmit={handleSubmit} className="bg-white p-4 shadow rounded">
             <input

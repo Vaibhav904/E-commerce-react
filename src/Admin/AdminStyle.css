@@ -352,10 +352,12 @@
     }
 
     .btn-primary {
-        background-color: #4361ee;
+             background-color: #529cd9;
         border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 18px;
+            height: 37px;
     }
 
     .btn-primary:hover {
@@ -401,12 +403,14 @@
 
 .add-product a {
     padding: 4px 8px;
-    background-color: #1976d2;
+    background-color: #529cd9;
     color: #fff;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     text-decoration: none;
+        font-size: 18px;
+    height: 37px;
 }
 .variants-text{
     font-size: 17px;
@@ -414,4 +418,23 @@
 }
 .variants-check{
     padding: 9;
+}
+
+
+.btn-primary {
+             background-color: #5ca5e2;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 18px;
+            height: 37px;
+    }
+    button.btn.btn-link {
+    background: #f9f9f9;
+    color: #5ea3e2;
+    text-decoration: none;
+    border: 1px solid;
+}td a {
+    color: #4488cf;
+    text-decoration: none;
 }
