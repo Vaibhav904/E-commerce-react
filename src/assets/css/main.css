@@ -322,13 +322,15 @@ h2 {
      z-index: 99;
   border-radius: 0px;
   border: 1px;
-  box-shadow: 1px 0px 1px 1px #c2c2c275;
+      box-shadow: 2px 1px 2px 3px #ededed75;
+/* 
+  box-shadow: 1px 0px 1px 1px #c2c2c275; */
     background: rgb(255, 255, 255);
   color: #000;
   font-size: 24px;
       font-size: 28px;
     /* min-width: 156px; */
-    padding: 14px 8px;
+    padding: 14px 29px;
 }
 
 .dropdown-menu li a {
@@ -4723,10 +4725,6 @@ body.cart-open {
 }
 
 
-
-
-
-
 .toast {
   transition: all 0.5s ease;
 }
@@ -4766,4 +4764,26 @@ button.btn.btn-link.total_order{
 }
 .swiper-pagination{
   bottom: -4px !important;
+}
+
+.cus_cart{
+  position: relative;
+  span{
+    background: #642b1e;
+    width: 21px;
+    height: 21px;
+
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 14px;
+    position: absolute;
+        top: -4px;
+        left: 14px;
+    font-weight: 600;
+
+    font-weight: 600;
+  }
 }

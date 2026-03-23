@@ -7,7 +7,7 @@ import { useContext, useEffect, useState } from "react";
 import CountrySelector from "./Country";
 import { CiFacebook } from "react-icons/ci";
 import Addcart from "../pages/Addcart";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { clearCart } from "../Redux/CartSlice";
 import { addProduct } from "../Redux/ProductSlice";
 
@@ -29,6 +29,9 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
+
+  const cartItems = useSelector((state) => state.cart.cart);
+  console.log('cartItems', cartItems);
   // 🔥 FETCH CATEGORY (ONLY ADDITION)
   useEffect(() => {
     fetch("http://tech-shop.techsaga.live/api/category")
@@ -262,8 +265,13 @@ export default function Header() {
             </li>
 
             <li onClick={() => setIsOpen(true)}>
+                 <div className="cus_cart">  
+                  {cartItems?.length>0 && 
+                             <span>{cartItems?.length}</span>
+                             }
               <FaCartShopping />
               <div className="wishlist-text">Cart</div>
+              </div> 
             </li>
           </ul>
         </header>
