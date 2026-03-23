@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import signup from "../assets/Image/sign-up.gif";
+import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
   const [form, setForm] = useState({
@@ -11,7 +12,19 @@ export default function SignUp() {
     password: "",
     confirm_password: "",
   });
+  const [toast, setToast] = useState({
+  show: false,
+  message: "",
+  type: "success", // success | danger
+});
+const showToast = (message, type = "success") => {
+  setToast({ show: true, message, type });
 
+  setTimeout(() => {
+    setToast({ show: false, message: "", type: "success" });
+  }, 3000);
+};
+const navigate = useNavigate();
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -79,7 +92,8 @@ if (!form.last_name.trim())
         setErrors(res.data.message || {});
       }
     } catch (err) {
-      alert("Signup failed ❌");
+      showToast("Signup failed ❌", "danger");
+      // alert("Signup failed ❌");
     } finally {
       setLoading(false);
     }
@@ -110,7 +124,8 @@ formData.append("last_name", form.last_name);
       );
 
       if (res.data.status) {
-        alert("Account verified successfully 🎉");
+        showToast("Account verified successfully 🎉", "success");
+        // alert("Account verified successfully 🎉");
         setShowOtpModal(false);
         setOtp("");
         setForm({
@@ -121,6 +136,8 @@ formData.append("last_name", form.last_name);
           password: "",
           confirm_password: "",
         });
+        navigate('/login');
+        
       } else {
         setOtpError(res.data.message || "Invalid OTP");
       }
@@ -229,6 +246,25 @@ formData.append("last_name", form.last_name);
               {otpLoading ? "Verifying..." : "Verify OTP"}
             </button>
           </div>
+          <div
+  className="position-fixed top-0 end-0 p-3"
+  style={{ zIndex: 9999 }}
+>
+  <div
+    className={`toast align-items-center text-white bg-${toast.type} ${
+      toast.show ? "show" : "hide"
+    }`}
+  >
+    <div className="d-flex">
+      <div className="toast-body">{toast.message}</div>
+      <button
+        type="button"
+        className="btn-close btn-close-white me-2 m-auto"
+        onClick={() => setToast({ ...toast, show: false })}
+      ></button>
+    </div>
+  </div>
+</div>
         </div>
       )}
     </>

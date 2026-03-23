@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 
 const PaymentSuccess = () => {
@@ -50,7 +50,7 @@ const PaymentSuccess = () => {
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1 style={{ color: "green" }}>Payment Successful 🎉</h1>
+      <h1 style={{ color: "green" }}>Payment Successful</h1>
 
       {paymentData && (
         <>
@@ -60,9 +60,10 @@ const PaymentSuccess = () => {
           <p><strong>Paid On:</strong> {paymentData.paid_on}</p>
           <p><strong>Email:</strong> {paymentData.customer_email}</p>
 
-          <br />
+         <div className="my-4">
 
           <a
+          
             href={paymentData.invoice_url}
             target="_blank"
             rel="noopener noreferrer"
@@ -76,6 +77,12 @@ const PaymentSuccess = () => {
           >
             Download Invoice
           </a>
+          <div className="my-5">
+          <Link to="/"className="p_link">
+            Back to home page
+          </Link>
+          </div>
+          </div>
         </>
       )}
     </div>

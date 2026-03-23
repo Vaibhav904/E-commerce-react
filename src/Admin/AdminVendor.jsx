@@ -239,6 +239,7 @@ import axios from "axios";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
 import { useLocation, useNavigate } from "react-router-dom";
+import { FaFileExport  } from "react-icons/fa";
 
 export default function AdminVendor() {
   const [vendors, setVendors] = useState([]);
@@ -389,7 +390,7 @@ const handleTotalProductsClick = (id)=>{
 }
 const handleTotalOrdersClick = (id)=>{
    console.log("Navigating to order details for Order ID:", id);
-    navigate('/customer-orderlisting', { state: { OrderId: id } });
+    navigate('/customer-orderlisting', { state: { vendor_id: id } });
 }
 // handleTotalOrdersClick
 
@@ -400,7 +401,7 @@ const handleTotalOrdersClick = (id)=>{
       <div className="dash-header w-100">
         <AdminHeader />
 
-        <div className="container mt-4">
+        <div className="container-fluid mt-4">
           <h2 className="dashboard-title mb-4">Vendor Listing</h2>
 
           <div className="d-flex justify-content-between mb-3">
@@ -416,7 +417,7 @@ const handleTotalOrdersClick = (id)=>{
             />
           </div>
             <button className="btn btn-primary mt-md-0 mt-3" onClick={handleDownloadCSV}>
-              Download CSV
+            <FaFileExport  />  Download CSV
             </button>
           </div>
           {loading && <p>Loading vendors...</p>}
@@ -471,19 +472,19 @@ const handleTotalOrdersClick = (id)=>{
                           )}
                         </td>
 
-                        <td>
+                        <td className="text-center">
                          <button   onClick={() =>
                                     handleTotalProductsClick(vendor.id)
-                                  }  className="btn btn-link">
+                                  }  className="btn btn-link total_product">
                           {vendor.total_products}
                           </button> 
                           {/* {vendor.total_products} */}
                           </td>
-                        <td>
+                        <td className="text-center">
                           
                             <button   onClick={() =>
                                     handleTotalOrdersClick(vendor.id)
-                                  }  className="btn btn-link">
+                                  }  className="btn btn-link total_order">
                           {vendor.total_purchased}
                           </button>
                           </td>

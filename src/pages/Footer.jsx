@@ -32,18 +32,18 @@ export default function Footer() {
             <li>
               <Link to="/account">My account</Link>
             </li>
-            <li>
+            {/* <li>
               <Link to="/cart">Cart</Link>
-            </li>
+            </li> */}
             <li>
               <Link to="/wishlist">Wishlist</Link>
             </li>
-            <li>
+            {/* <li>
               <Link to="/compare">Product Compare</Link>
-            </li>
-            <li>
+            </li> */}
+            {/* <li>
               <Link to="/order-tracking">Order Tracking</Link>
-            </li>
+            </li> */}
              <li>
               <Link to="/vendor-login">Vendor Login</Link>
             </li>

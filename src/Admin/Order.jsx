@@ -5,6 +5,7 @@ import { Outlet } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { FaPlus } from "react-icons/fa";
 
 export default function Order() {
     const [searchTerm, setSearchTerm] = useState("");  // Added state for search term
@@ -286,9 +287,9 @@ const handleDelete = async (id) => {
 
         <h2 className="dashboard-title">Category Overview</h2>
 
-        <div className="container">
+        <div className="container-fluid">
 
-
+<div className="d-flex justify-content-between">
           {/* Search Input */}
           <input
             type="text"
@@ -305,9 +306,9 @@ const handleDelete = async (id) => {
           />
 
           <div className="add-product">
-            <Link to={`/addCategory`}>Add Category / SubCategory</Link>
+            <Link to={`/addCategory`}><FaPlus /> Add Category / SubCategory</Link>
           </div>
-
+</div>
           <DataTable
             columns={columns}
             data={data}

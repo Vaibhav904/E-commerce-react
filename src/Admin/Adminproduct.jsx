@@ -266,6 +266,8 @@ import AdminSidebar from "./AdminSidebar";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import axios from "axios";
+import { FaPlus } from "react-icons/fa";
+
 
 export default function Adminproduct() {
   const [data, setData] = useState([]);
@@ -526,7 +528,7 @@ export default function Adminproduct() {
 
         <h2 className="dashboard-title">Product Overview</h2>
 
-        <div className="container">
+        <div className="container-fluid">
           <div className="d-flex justify-content-between mb-3 flex-wrap">
               <input
                 type="text"
@@ -542,7 +544,7 @@ export default function Adminproduct() {
                 }}
               />
               <div className="add-product">
-                <Link to={`/productadd`}>Add Product</Link>
+                <Link to={`/productadd`}><FaPlus /> Add Product</Link>
               </div>
           </div>
   <div className="card"> 

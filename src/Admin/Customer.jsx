@@ -3,6 +3,7 @@ import axios from "axios";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
 import { Link, useNavigate } from "react-router-dom";
+import { FaFileExport  } from "react-icons/fa";
 
 export default function Customer() {
   const [customers, setCustomers] = useState([]);
@@ -144,7 +145,7 @@ const formatDate = (timestamp) => {
       <div className="dash-header w-100">
         <AdminHeader />
 
-        <div className="container mt-4">
+        <div className="container-fluid mt-4">
           <h2 className="dashboard-title mb-4">Customer Overview</h2>
           <div className="d-flex justify-content-between mb-4">
           <div className=" col-md-3">
@@ -161,7 +162,7 @@ const formatDate = (timestamp) => {
             className="btn btn-primary mt-md-0 mt-3"
             onClick={handleDownloadCSV}
           >
-            Download CSV
+          <FaFileExport  />  Download CSV
           </button>
         </div>
           <div className="card shadow-sm">

@@ -224,7 +224,7 @@ useEffect(() => {
 
         <h2 className="dashboard-title">Product Overview</h2>
 
-        <div className="container">
+        <div className="container-fluid my-4">
           <div className="add-product">
             <Link to={`/vender-productadd`}>Add Product</Link>
           </div>

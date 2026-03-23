@@ -83,7 +83,7 @@ export default function AddSpecial() {
       <div className="dash-header w-100">
         <AdminHeader />
 
-        <div className="container mt-4">
+        <div className="container-fluid my-4">
           <h2 className="dashboard-title mb-4">Add Special Product</h2>
 
           <div className="card shadow-sm">

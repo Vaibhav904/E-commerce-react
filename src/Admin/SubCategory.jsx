@@ -7,6 +7,7 @@ import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import Form from "react-bootstrap/Form";
 import axios from "axios";
+import { FaPlus } from "react-icons/fa";
 
 export default function SubCategory() {
   const [banners, setBanners] = useState([]);
@@ -102,10 +103,10 @@ export default function SubCategory() {
 
         <h2 className="dashboard-title mb-4">Banner Listing</h2>
 
-        <div className="container">
+        <div className="container-fluid">
           <div className="add-product mb-3">
             <Link to="/addbanner" className="btn btn-primary">
-              Add Banner
+             <FaPlus /> Add Banner
             </Link>
           </div>
 

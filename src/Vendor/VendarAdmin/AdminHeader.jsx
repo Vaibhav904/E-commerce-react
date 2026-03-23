@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { FaBell } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
 import { IoMdArrowDropdown } from "react-icons/io";
@@ -6,11 +6,13 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../Context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faStore } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+
 const AdminHeader = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { logout } = useContext(AuthContext); // context logout function
-
+const [vendorName, setVendorName] = useState(""); // dynamic seller name
   const vendorHandleLogout = () => {
     localStorage.removeItem('vendorToken')
       navigate("/login", { replace: true });
@@ -19,6 +21,18 @@ const AdminHeader = () => {
   
     navigate("/vendor-login");
   };
+
+  useEffect(() => {
+  const vendorToken = localStorage.getItem("vendorToken");
+  if (vendorToken) {
+    axios
+      .get("http://tech-shop.techsaga.live/api/v1/vendor-profile", {
+        headers: { Authorization: `Bearer ${vendorToken}` },
+      })
+      .then((res) => setVendorName(res.data.data?.name || "Seller"))
+      .catch((err) => console.error("Error fetching vendor:", err));
+  }
+}, []);
 
   return (
     <div className="admin-header">
@@ -35,6 +49,10 @@ const AdminHeader = () => {
         <div className="user-img">
            <FontAwesomeIcon icon={faStore} title="Seller" />
         </div>
+        <span style={{ fontSize: "14px", fontWeight: "500", color: "#333" }}>
+  {vendorName || "Seller"}
+</span>
+        
 
         <div style={{ position: "relative", display: "inline-block" }}>
           <button

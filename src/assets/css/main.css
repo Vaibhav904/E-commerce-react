@@ -4727,3 +4727,43 @@ body.cart-open {
 
 
 
+.toast {
+  transition: all 0.5s ease;
+}
+
+button.btn.btn-link.total_product {
+    background: #d5e8a2;
+    color: #000000;
+    border: 1px solid #d5e8a2;
+    padding: 4px 22px;
+}
+button.btn.btn-link.total_order{
+    background: #a2c9e8;
+    color: #000000;
+    border: 1px solid #d5e8a2;
+    padding: 4px 22px;
+}
+.p_tag {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 15px;
+}
+.cart_image{
+    width: 177px;
+}
+.dash-header {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.p_link{
+      color: #318dcf;
+    text-decoration: none;
+    background: white;
+    border: 1px solid #dedede;
+    padding: 10px 20px;
+    border-radius: 7px;
+}
+.swiper-pagination{
+  bottom: -4px !important;
+}

@@ -62,7 +62,12 @@ import VendarOrderlisting from "./Vendor/VendarAdmin/Orderlisting";
 import VenderProductAdd from "./Vendor/VendarAdmin/ProductAdd";
 import VenderProductEdit from "./Vendor/VendarAdmin/ProductEdit";
 import EarningsVendor from "./Vendor/VendarAdmin/EarningsVendor";
+import VendorProfile from "./Vendor/VendarAdmin/VendorProfile";
+// import VendorProfile from "./Vendor/VendarAdmin/VendorProfile";
+
+
 import VendorPayment from "./Admin/VendorPayment";
+import VendorOrderDetails from "./Vendor/VendarAdmin/VendorOrderDetails";
 
 function App() {
   const { token } = useContext(AuthContext); // 🔥 token check
@@ -253,6 +258,20 @@ function App() {
               </ProtectedVendorRoute>
             }
           />
+           {/* {
+                id: "Profile",
+                icon: <CiCircleList />,
+                label: "Profile",
+                path: "/vendor/vendor-profile",
+              }, */}
+            <Route
+            path="/vendor/vendor-profile"
+            element={
+              <ProtectedVendorRoute>
+                <VendorProfile/>
+              </ProtectedVendorRoute>
+            }
+          />
 
 
           <Route
@@ -317,6 +336,16 @@ function App() {
               // vendorToken ? <ProductAdd /> : <Navigate to="/vendor" replace />
             }
           />
+          <Route
+            path="/vendor-orders-details/:id"
+            element={
+              <ProtectedVendorRoute>
+                <VendorOrderDetails />
+              </ProtectedVendorRoute>
+              // vendorToken ? <ProductAdd /> : <Navigate to="/vendor" replace />
+            }
+          />
+          
 
           <Route
             path="/vender-productedit/:id"

@@ -70,10 +70,10 @@ const handleSubmit = async (e) => {
 
       <div className="dash-header w-100">
         <AdminHeader />
-   <div className="container">
+   <div className="container-fluid mb-4">
          <h2 className="dashboard-title mb-4">Add Banner</h2>
 
-        <Form onSubmit={handleSubmit} style={{ maxWidth: "600px" }}>
+        <Form className="card mx-auto" onSubmit={handleSubmit} style={{ maxWidth: "600px" }}>
           <Form.Group className="mb-3">
             <Form.Label>Title</Form.Label>
             <Form.Control
@@ -117,7 +117,7 @@ const handleSubmit = async (e) => {
           </Form.Group>
 
           <Button type="submit" disabled={loading}>
-            {loading ? "Saving..." : "Add Banner"}
+            {loading ? "Saving..." : " Add Banner"}
           </Button>
         </Form>
    </div>

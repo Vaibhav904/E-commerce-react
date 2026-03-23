@@ -154,7 +154,7 @@ const handleApprove = async () => {
       <div className="dash-header w-100">
         <AdminHeader />
 
-        <div className="container mt-4">
+        <div className="container-fluid mt-4">
           <h2 className="dashboard-title mb-4">Vendor Payment</h2>
 
           <div className="card p-4 shadow-sm">

@@ -9,7 +9,9 @@ import {
   FaCog,
 } from "react-icons/fa";
 import { CiCircleList } from "react-icons/ci";
-
+import { FaUser } from "react-icons/fa";
+import { FaDollarSign } from "react-icons/fa";
+import { FaClipboardList } from "react-icons/fa";
 const AdminSidebar = () => {
   const [activeItem, setActiveItem] = useState("");
   const location = useLocation();
@@ -35,15 +37,21 @@ const AdminSidebar = () => {
     },
     {
       id: "orderlisting",
-      icon: <CiCircleList />,
+      icon: <FaClipboardList />,
       label: "Order Listing",
       path: "/vendar-orderlisting",
     },
       {
       id: "vendorearnings",
-      icon: <CiCircleList />,
+      icon: <FaDollarSign />,
       label: "Vendor-Earnings",
       path: "/vendor/vendor-earnings",
+    },
+    {
+      id: "VendorProfile",
+      icon: <FaUser />,
+      label: "Profile",
+      path: "/vendor/vendor-profile",
     },
     // { id: "settings", icon: <FaCog />, label: "Settings", path: "/settings" },
   ];

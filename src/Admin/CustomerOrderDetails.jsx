@@ -3,7 +3,7 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
 import axios from "axios";
-
+import NoOrderFound from '../assets/Image/common_image.png'
 export default function CustomerOrderDetails() {
   const { id } = useParams();
   const fetchedRef = useRef(false);
@@ -68,7 +68,14 @@ useEffect(() => {
   }
 
   if (!order) {
-    return <div>No order found</div>;
+    return <div>
+      <div className="text-center text-muted py-4">
+                    <p>
+                      <img className="cart_image" src={NoOrderFound}/>
+                    </p>
+                   <p className="p_tag"> No Order Found</p>
+      </div>
+    </div>;
   }
 
 

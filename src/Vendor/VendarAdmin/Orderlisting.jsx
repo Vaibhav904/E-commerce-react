@@ -78,7 +78,7 @@ const exportOrdersToCSV = (ordersArray, filename = "orders.csv") => {
       <div className="dash-header w-100">
         <AdminHeader />
 
-        <div className="container mt-4">
+        <div className="container-fluid my-4">
           <h2 className="dashboard-title mb-4">
             Customer Order Listing
           </h2>
@@ -137,7 +137,7 @@ const exportOrdersToCSV = (ordersArray, filename = "orders.csv") => {
                           View Invoice
                         </a> */}
                       <Link
-  to={`/orderdetails/${order.order_id}`}
+  to={`/vendor-orders-details/${order.order_id}`}
   className="btn btn-sm btn-primary"
 >
   View Order Details

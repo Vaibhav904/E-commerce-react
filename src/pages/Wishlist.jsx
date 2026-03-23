@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../Context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import WishlistImage from '../assets/Image/common_image.png';
 export default function Wishlist() {
   const { token } = useContext(AuthContext);
   const [wishlist, setWishlist] = useState([]);
@@ -75,7 +75,11 @@ const fetchWishlist = async () => {
       <h2 className="mb-4">My Wishlist</h2>
 
       {wishlist.length === 0 ? (
-        <div className="text-center">Your wishlist is empty.</div>
+        <div className="text-center">
+        <p> 
+          <img src={WishlistImage}/>
+        </p>
+         <p className="p_tag">Your wishlist is empty.</p></div>
       ) : (
         <div className="row">
           {wishlist.map((item) => (

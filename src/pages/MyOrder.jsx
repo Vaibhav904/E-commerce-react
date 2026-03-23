@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../Context/AuthContext";
 import { useLocation } from "react-router-dom";
-
+import NoorderFound from '../assets/Image/common_image.png';
 export default function MyOrder() {
   const { token } = useContext(AuthContext);
   const [orders, setOrders] = useState([]);
@@ -53,7 +53,10 @@ export default function MyOrder() {
       <h2 className="mb-4">My Orders</h2>
 
       {orders.length === 0 ? (
-        <h5>No Orders Found</h5>
+        <div className="text-center">
+          <p><img src={NoorderFound}/></p>
+        <p className="p_tag mb-5">No Orders Found</p>
+        </div>
       ) : (
         orders.map((order) => (
           <div

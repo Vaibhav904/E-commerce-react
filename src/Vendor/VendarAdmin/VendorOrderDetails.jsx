@@ -3,17 +3,16 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
 import axios from "axios";
-import NoOrderFound from '../assets/Image/common_image.png'
 
-export default function OrderDetails() {
+export default function VendorOrderDetails() {
   const { id } = useParams();
   const fetchedRef = useRef(false);
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem("token");
-
+  const vendorToken = localStorage.getItem("vendorToken");
+console.log("vendorToken", vendorToken)
   const downloadInvoice = () => {
   fetch(order.invoice_url)
     .then(res => res.blob())
@@ -34,34 +33,37 @@ export default function OrderDetails() {
     fetchOrderDetails();
   }, [id]);
 
-  const fetchOrderDetails = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("order_id", id);
+const fetchOrderDetails = async () => {
+  try {
+    console.log("Sending Order ID:", id);
 
-      const res = await axios.post(
-        "http://tech-shop.techsaga.live/api/v1/order/details",
-        formData,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    if (!id) return;
 
-      if (res.data?.status) {
-        setOrder(res.data.data);
+    const res = await axios.post(
+      "http://tech-shop.techsaga.live/api/v1/vendor/orders/details",
+      { order_id: id },
+      {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${vendorToken}`,
+        },
       }
-    } catch (error) {
-      console.error("Order fetch error:", error);
-    } finally {
-      setLoading(false);
+    );
+
+    console.log("API Response:", res.data);
+
+    if (res.data?.status) {
+      setOrder(res.data.data);
     }
-  };
+  } catch (error) {
+    console.error("Order fetch error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* ---------- UI STATES ---------- */
-  if (!token) return <Navigate to="/admin" replace />;
+  if (!vendorToken) return <Navigate to="/admin" replace />;
 
   if (!id) {
     return <div className="text-center mt-5 text-danger">Order ID missing</div>;
@@ -72,14 +74,7 @@ export default function OrderDetails() {
   }
 
   if (!order) {
-    return <div className="text-center mt-5 text-danger">
-       <div className="text-center text-muted py-4">
-                    <p>
-                      <img className="cart_image" src={NoOrderFound}/>
-                    </p>
-                   <p className="p_tag"> No Order Found</p>
-      </div>
-    </div>;
+    return <div className="text-center mt-5 text-danger">Order not found</div>;
   }
 
   return (

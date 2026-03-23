@@ -3,6 +3,7 @@ import axios from "axios";
 import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
 import { Link } from "react-router-dom";
+import { FaPlus } from "react-icons/fa";
 
 export default function SpecialProduct() {
   const [products, setProducts] = useState([]);
@@ -84,13 +85,13 @@ const handleDelete = async (id) => {
       <div className="dash-header w-100">
         <AdminHeader />
 
-        <div className="container mt-4">
+        <div className="container-fluid my-4">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2 className="dashboard-title">Special Product</h2>
 
             {/* ADD BUTTON */}
             <Link to="/addspecial" className="btn btn-primary">
-              + Add Special Product
+              <FaPlus /> Add Special Product
             </Link>
           </div>
 

@@ -18,7 +18,7 @@ export default function Featured() {
   const dispatch = useDispatch();
   const { token } = useContext(AuthContext);
   const [selectedColorId, setSelectedColorId] = useState(null);
-const [wishlistState, setWishlistState] = useState({});
+  const [wishlistState, setWishlistState] = useState({});
   const [products, setProducts] = useState([]);
   // const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -30,113 +30,111 @@ const [wishlistState, setWishlistState] = useState({});
   const [quantity, setQuantity] = useState(1);
   const [isOpen, setIsOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState("");
-const [filterLoading, setFilterLoading] = useState(false);
-const [loading, setLoading] = useState(true);
+  const [filterLoading, setFilterLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  console.log("selectedColorId", selectedColorId);
+  console.log("selectedSizeId", selectedSizeId);
   /* ---------------- HELPERS ---------------- */
   const makeSlug = (text) => text?.toLowerCase().trim().replace(/\s+/g, "-");
 
   /* ---------------- FETCH CATEGORY PRODUCTS ---------------- */
-const fetchCategoryProducts = async () => {
-  try {
-    setLoading(true);
-    //  setLoading(true);
+  const fetchCategoryProducts = async () => {
+    try {
+      setLoading(true);
+      //  setLoading(true);
       //  alert("API hit ho rahi hai...");
 
-    let res;
+      let res;
 
-    try {
-         
-      // 🔹 First try subcategory API
-      res = await axios.get(
-  `http://tech-shop.techsaga.live/api/product-subcategory/${slug}`,
+      try {
+        // 🔹 First try subcategory API
+        res = await axios.get(
+          `http://tech-shop.techsaga.live/api/product-subcategory/${slug}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
               Accept: "application/json",
             },
-          }
-);
-    } catch (err) {
-      // 🔹 If subcategory fails, fallback to category API
-    res = await axios.get(
-  `http://tech-shop.techsaga.live/api/product-category/${slug}`,
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-    },
-  }
-);
+          },
+        );
+      } catch (err) {
+        // 🔹 If subcategory fails, fallback to category API
+        res = await axios.get(
+          `http://tech-shop.techsaga.live/api/product-category/${slug}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          },
+        );
+      }
+
+      const productList = res.data.products || [];
+
+      setProducts(productList);
+
+      // ✅ wishlist state prepare
+      const wishlistMap = {};
+      productList.forEach((p) => {
+        wishlistMap[p.id] = p.in_wishlist;
+      });
+
+      setWishlistState(wishlistMap);
+    } catch (error) {
+      console.error("Product fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (slug) fetchCategoryProducts();
+  }, [slug]);
+
+  const handleWishlistToggle = async (e, item) => {
+    e.stopPropagation();
+
+    if (!token) {
+      navigate("/login");
+      return;
     }
 
-    const productList = res.data.products || [];
-
-    setProducts(productList);
-
-    // ✅ wishlist state prepare
-    const wishlistMap = {};
-    productList.forEach((p) => {
-      wishlistMap[p.id] = p.in_wishlist;
-    });
-
-    setWishlistState(wishlistMap);
-
-  } catch (error) {
-    console.error("Product fetch error:", error);
-  } finally {
-    setLoading(false);
-  }
-};
-
-useEffect(() => {
-  if (slug) fetchCategoryProducts();
-}, [slug]);
-
-
-const handleWishlistToggle = async (e, item) => {
-  e.stopPropagation();
-
-  if (!token) {
-    navigate("/login");
-    return;
-  }
-
-  try {
-    const detailRes = await axios.get(
-      `http://tech-shop.techsaga.live/api/product-details/${item.slug}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    try {
+      const detailRes = await axios.get(
+        `http://tech-shop.techsaga.live/api/product-details/${item.slug}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      }
-    );
+      );
 
-    const variantId =
-      detailRes.data.product?.variants?.[0]?.variant_id;
+      const variantId = detailRes.data.product?.variants?.[0]?.variant_id;
 
-    await axios.post(
-      "http://tech-shop.techsaga.live/api/wishlist/toggle",
-      {
-        product_id: item.id,
-        variant_id: variantId,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      await axios.post(
+        "http://tech-shop.techsaga.live/api/wishlist/toggle",
+        {
+          product_id: item.id,
+          variant_id: variantId,
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
-    // UI instant update
-    setWishlistState((prev) => ({
-      ...prev,
-      [item.id]: !prev[item.id],
-    }));
-
-  } catch (error) {
-    console.log("wishlist error", error);
-  }
-};
+      // UI instant update
+      setWishlistState((prev) => ({
+        ...prev,
+        [item.id]: !prev[item.id],
+      }));
+    } catch (error) {
+      console.log("wishlist error", error);
+    }
+  };
 
   const filteredProducts = useSelector((state) => state.products.filtered);
 
@@ -199,6 +197,7 @@ const handleWishlistToggle = async (e, item) => {
   const handleAddToCart = async () => {
     if (!selectedVariant) return;
 
+    console.log("object", selectedColorId, selectedSizeId);
     setShowModal(false);
     setIsOpen(true);
 
@@ -226,6 +225,7 @@ const handleWishlistToggle = async (e, item) => {
           addToCart({
             product_id: productDetails.id,
             variant_id: selectedVariant.variant_id,
+            variant_attribute_id: [selectedSizeId, selectedColorId],
             title: productDetails.title,
             price: selectedVariant.sale_price,
             image:
@@ -290,111 +290,106 @@ const handleWishlistToggle = async (e, item) => {
 
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
-    const displayProducts = filteredProducts.length ? filteredProducts : products;
+  const displayProducts = filteredProducts.length ? filteredProducts : products;
 
-const sortedProducts = [...displayProducts].sort((a, b) => {
-  if (sortOrder === "asc") {
-    return a.title.localeCompare(b.title);
-  }
-  if (sortOrder === "desc") {
-    return b.title.localeCompare(a.title);
-  }
-  return 0;
-});
+  const sortedProducts = [...displayProducts].sort((a, b) => {
+    if (sortOrder === "asc") {
+      return a.title.localeCompare(b.title);
+    }
+    if (sortOrder === "desc") {
+      return b.title.localeCompare(a.title);
+    }
+    return 0;
+  });
 
+  // if (loading) return <h3 className="text-center mt-5">Loading...</h3>;
 
-// if (loading) return <h3 className="text-center mt-5">Loading...</h3>;
+  return (
+    <div className="featured-pro container">
+      <div className="d-flex justify-content-start mb-3">
+        <Dropdown>
+          <Dropdown.Toggle variant="dark">Sort By</Dropdown.Toggle>
 
-   return (
-  <div className="featured-pro container">
-    <div className="d-flex justify-content-start mb-3">
+          <Dropdown.Menu>
+            <Dropdown.Item onClick={() => setSortOrder("asc")}>
+              A → Z
+            </Dropdown.Item>
 
-  <Dropdown>
-    <Dropdown.Toggle variant="dark">
-      Sort By
-    </Dropdown.Toggle>
+            <Dropdown.Item onClick={() => setSortOrder("desc")}>
+              Z → A
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
+      </div>
+      {/* PRODUCTS */}
+      {/* PRODUCTS */}
 
-    <Dropdown.Menu>
-      <Dropdown.Item onClick={() => setSortOrder("asc")}>
-        A → Z
-      </Dropdown.Item>
-
-      <Dropdown.Item onClick={() => setSortOrder("desc")}>
-        Z → A
-      </Dropdown.Item>
-    </Dropdown.Menu>
-
-  </Dropdown>
-
-</div>
-    {/* PRODUCTS */}
-    {/* PRODUCTS */}
-
-{loading ? (
-  <div className="text-center py-5">
-    <div className="spinner-border text-dark" role="status">
-      <span className="visually-hidden">Loading...</span>
-    </div>
-  </div>
-) : (
-    <div className="row g-5 py-5">
-      {sortedProducts.map((item) => (
-        <div className="col-md-3" key={item.id}>
-          {/* <div
+      {loading ? (
+        <div className="text-center py-5">
+          <div className="spinner-border text-dark" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      ) : (
+        <div className="row g-5 py-5">
+          {sortedProducts.map((item) => (
+            <div className="col-md-3" key={item.id}>
+              {/* <div
       className="seller-card"
       onClick={() => navigate(`/product/${item.slug}`)}
       style={{ cursor: "pointer" }}
     > */}
 
-          <div
-            className="seller-card"
-            onClick={() => {
-              if (item?.availabilityStatus === "Out of Stock") return;
-              navigate(`/product/${item.slug}`);
-            }}
-            style={{
-              cursor:
-                item?.availabilityStatus === "Out of Stock"
-                  ? "not-allowed"
-                  : "pointer",
-              opacity: item?.availabilityStatus === "Out of Stock" ? 0.6 : 1,
-            }}
-          >
-            <img src={item.thumbnail} alt={item.title} />
-            <h4>{item.title}</h4>
-            <h6>{item.description}</h6>
+              <div
+                className="seller-card"
+                onClick={() => {
+                  if (item?.availabilityStatus === "Out of Stock") return;
+                  navigate(`/product/${item.slug}`);
+                }}
+                style={{
+                  cursor:
+                    item?.availabilityStatus === "Out of Stock"
+                      ? "not-allowed"
+                      : "pointer",
+                  opacity:
+                    item?.availabilityStatus === "Out of Stock" ? 0.6 : 1,
+                }}
+              >
+                <img src={item.thumbnail} alt={item.title} />
+                <h4>{item.title}</h4>
+                <h6>{item.description}</h6>
 
-            <p>
-              Rs.{item.Salesprice}
-              <span className="price-amount"> Rs.{item.price}</span>
-              <span className="discount-value">
-                ({item.discountPercentage}% off)
-              </span>
-            </p>
+                <p>
+                  Rs.{item.Salesprice}
+                  <span className="price-amount"> Rs.{item.price}</span>
+                  <span className="discount-value">
+                    ({item.discountPercentage}% off)
+                  </span>
+                </p>
 
-            {item.availabilityStatus === "Out of Stock" && (
-              <span className="text-danger">Out of Stock</span>
-            )}
+                {item.availabilityStatus === "Out of Stock" && (
+                  <span className="text-danger">Out of Stock</span>
+                )}
 
-            <div className="btn-selectwish">
-              <div className="whislist-icon">
-              <button onClick={(e) => handleWishlistToggle(e, item)}>
-  <CiHeart
-    size={22}
-    style={{
-      color: wishlistState[item.id] ? "red" : "#ccc",
-      cursor: "pointer",
-    }}
-  />
-</button>
+                <div className="btn-selectwish">
+                  <div className="whislist-icon">
+                    <button onClick={(e) => handleWishlistToggle(e, item)}>
+                      <CiHeart
+                        size={22}
+                        style={{
+                          color: wishlistState[item.id] ? "red" : "#ccc",
+                          cursor: "pointer",
+                        }}
+                      />
+                    </button>
 
-                <button onClick={(e) => e.stopPropagation()}>
-                  <FaEye />
-                </button>
-              </div>
+                    <button onClick={(e) => e.stopPropagation()}>
+                      <FaEye />
+                    </button>
+                  </div>
 
-              <div className="select-option">
-                {/* <button
+                  <div className="select-option">
+                    {/* <button
             onClick={(e) => {
               e.stopPropagation();  
               fetchProductDetails(item);
@@ -403,210 +398,210 @@ const sortedProducts = [...displayProducts].sort((a, b) => {
             Select options
           </button> */}
 
-                <button
-                  disabled={item?.availabilityStatus === "Out of Stock"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (item?.availabilityStatus === "Out of Stock") return;
-                    fetchProductDetails(item);
-                  }}
-                >
-                  Select options
-                </button>
+                    <button
+                      disabled={item?.availabilityStatus === "Out of Stock"}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (item?.availabilityStatus === "Out of Stock") return;
+                        fetchProductDetails(item);
+                      }}
+                    >
+                      Select options
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
+          ))}
+        </div>
+      )}
+
+      {/* ---------------- MODAL ---------------- */}
+      {showModal && productDetails && (
+        <div style={styles.overlay}>
+          <div style={styles.modal}>
+            <button
+              onClick={() => setShowModal(false)}
+              style={styles.closeButton}
+            >
+              ×
+            </button>
+
+            {detailsLoading ? (
+              <p className="p-4">Loading...</p>
+            ) : (
+              <div style={styles.content}>
+                {/* LEFT IMAGE */}
+                <div style={styles.imageSection}>
+                  <div style={styles.mainImageContainer}>
+                    <img
+                      src={
+                        (selectedVariant?.images?.length > 0
+                          ? selectedVariant.images
+                          : productDetails?.images)?.[currentImageIndex] ||
+                        "https://via.placeholder.com/400"
+                      }
+                      alt={productDetails?.title}
+                      style={styles.mainImage}
+                    />
+
+                    {(selectedVariant?.images?.length > 1 ||
+                      productDetails?.images?.length > 1) && (
+                      <>
+                        <button onClick={prevImage} style={styles.navLeft}>
+                          <FaAngleLeft />
+                        </button>
+
+                        <button onClick={nextImage} style={styles.navRight}>
+                          <FaAngleRight />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* RIGHT DETAILS */}
+                <div style={styles.detailsSection}>
+                  <h2>{productDetails?.title}</h2>
+
+                  {/* DESCRIPTION */}
+                  <p style={{ color: "#666" }}>
+                    {productDetails?.description || "No description available"}
+                  </p>
+
+                  {/* PRICE */}
+                  <h4>
+                    ₹{selectedVariant?.sale_price || productDetails?.Salesprice}
+                    <del className="ps-2 text-muted">
+                      ₹{selectedVariant?.price || productDetails?.price}
+                    </del>
+                  </h4>
+
+                  {/* SIZE */}
+                  {productDetails?.variants?.length > 0 && (
+                    <div className="my-3">
+                      <label className="fw-bold">Size:</label>
+                      <div className="d-flex gap-2 mt-2 flex-wrap">
+                        {productDetails.variants.map((variant) => {
+                          const sizeAttr = variant?.attributes?.find(
+                            (a) => a.attribute_name?.toLowerCase() === "size",
+                          );
+
+                          if (!sizeAttr) return null;
+
+                          return (
+                            <button
+                              key={variant.variant_id}
+                              className={`btn ${
+                                selectedVariant?.variant_id ===
+                                variant.variant_id
+                                  ? "btn-dark"
+                                  : "btn-outline-dark"
+                              }`}
+                              onClick={() => {
+                                setSelectedVariant(variant);
+
+                                const sizeAttr = variant?.attributes?.find(
+                                  (a) =>
+                                    a.attribute_name?.toLowerCase() === "size",
+                                );
+
+                                const colorAttr = variant?.attributes?.find(
+                                  (a) =>
+                                    a.attribute_name?.toLowerCase() === "color",
+                                );
+
+                                setSelectedSizeId(sizeAttr?.id || null);
+                                setSelectedColorId(colorAttr?.id || null);
+                              }}
+                            >
+                              {sizeAttr?.value}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* COLOR */}
+                  {selectedVariant?.attributes?.some(
+                    (a) => a.attribute_name?.toLowerCase() === "color",
+                  ) && (
+                    <div className="my-3">
+                      <label className="fw-bold">Color:</label>
+                      <div className="d-flex gap-3 mt-2">
+                        {selectedVariant.attributes
+                          .filter(
+                            (a) => a.attribute_name?.toLowerCase() === "color",
+                          )
+                          .map((colorAttr) => (
+                            <div
+                              key={colorAttr.id}
+                              onClick={() => setSelectedColorId(colorAttr.id)}
+                              style={{
+                                width: "35px",
+                                height: "35px",
+                                borderRadius: "50%",
+                                backgroundColor:
+                                  colorAttr?.value?.toLowerCase(),
+                                cursor: "pointer",
+                                border:
+                                  selectedColorId === colorAttr.id
+                                    ? "3px solid black"
+                                    : "1px solid #ccc",
+                              }}
+                            />
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* QUANTITY */}
+                  <div className="quantity-controls my-3 my-3">
+                    <button
+                      className="btn btn-outline-dark"
+                      onClick={handleDecrement}
+                    >
+                      -
+                    </button>
+
+                    <input
+                      type="number"
+                      value={quantity}
+                      readOnly
+                      style={{ textAlign: "center" }}
+                    />
+
+                    <button
+                      className="btn btn-outline-dark"
+                      onClick={handleIncrement}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  {/* BUTTONS */}
+                  <button
+                    className="btn-add-to-cart"
+                    onClick={(e) => handleAddToCart(productDetails?.id)}
+                  >
+                    Add to Cart
+                  </button>
+
+                  <button className="btn-shop-pay" onClick={handleBuyNow}>
+                    Buy Now
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      ))}
+      )}
+
+      <Addcart open={isOpen} close={() => setIsOpen(false)} />
     </div>
-    )}
-
-    {/* ---------------- MODAL ---------------- */}
-    {showModal && productDetails && (
-      <div style={styles.overlay}>
-        <div style={styles.modal}>
-          <button
-            onClick={() => setShowModal(false)}
-            style={styles.closeButton}
-          >
-            ×
-          </button>
-
-          {detailsLoading ? (
-            <p className="p-4">Loading...</p>
-          ) : (
-            <div style={styles.content}>
-              {/* LEFT IMAGE */}
-              <div style={styles.imageSection}>
-                <div style={styles.mainImageContainer}>
-                  <img
-                    src={
-                      (selectedVariant?.images?.length > 0
-                        ? selectedVariant.images
-                        : productDetails?.images)?.[currentImageIndex] ||
-                      "https://via.placeholder.com/400"
-                    }
-                    alt={productDetails?.title}
-                    style={styles.mainImage}
-                  />
-
-                  {(selectedVariant?.images?.length > 1 ||
-                    productDetails?.images?.length > 1) && (
-                    <>
-                      <button onClick={prevImage} style={styles.navLeft}>
-                        <FaAngleLeft />
-                      </button>
-
-                      <button onClick={nextImage} style={styles.navRight}>
-                        <FaAngleRight />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* RIGHT DETAILS */}
-              <div style={styles.detailsSection}>
-                <h2>{productDetails?.title}</h2>
-
-                {/* DESCRIPTION */}
-                <p style={{ color: "#666" }}>
-                  {productDetails?.description || "No description available"}
-                </p>
-
-                {/* PRICE */}
-                <h4>
-                  ₹{selectedVariant?.sale_price || productDetails?.Salesprice}
-                  <del className="ps-2 text-muted">
-                    ₹{selectedVariant?.price || productDetails?.price}
-                  </del>
-                </h4>
-
-                {/* SIZE */}
-                {productDetails?.variants?.length > 0 && (
-                  <div className="my-3">
-                    <label className="fw-bold">Size:</label>
-                    <div className="d-flex gap-2 mt-2 flex-wrap">
-                      {productDetails.variants.map((variant) => {
-                        const sizeAttr = variant?.attributes?.find(
-                          (a) => a.attribute_name?.toLowerCase() === "size",
-                        );
-
-                        if (!sizeAttr) return null;
-
-                        return (
-                          <button
-                            key={variant.variant_id}
-                            className={`btn ${
-                              selectedVariant?.variant_id === variant.variant_id
-                                ? "btn-dark"
-                                : "btn-outline-dark"
-                            }`}
-                            onClick={() => {
-                              setSelectedVariant(variant);
-
-                              const sizeAttr = variant?.attributes?.find(
-                                (a) =>
-                                  a.attribute_name?.toLowerCase() === "size",
-                              );
-
-                              const colorAttr = variant?.attributes?.find(
-                                (a) =>
-                                  a.attribute_name?.toLowerCase() === "color",
-                              );
-
-                              setSelectedSizeId(sizeAttr?.id || null);
-                              setSelectedColorId(colorAttr?.id || null);
-                            }}
-                          >
-                            {sizeAttr?.value}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* COLOR */}
-                {selectedVariant?.attributes?.some(
-                  (a) => a.attribute_name?.toLowerCase() === "color",
-                ) && (
-                  <div className="my-3">
-                    <label className="fw-bold">Color:</label>
-                    <div className="d-flex gap-3 mt-2">
-                      {selectedVariant.attributes
-                        .filter(
-                          (a) => a.attribute_name?.toLowerCase() === "color",
-                        )
-                        .map((colorAttr) => (
-                          <div
-                            key={colorAttr.id}
-                            onClick={() => setSelectedColorId(colorAttr.id)}
-                            style={{
-                              width: "35px",
-                              height: "35px",
-                              borderRadius: "50%",
-                              backgroundColor: colorAttr?.value?.toLowerCase(),
-                              cursor: "pointer",
-                              border:
-                                selectedColorId === colorAttr.id
-                                  ? "3px solid black"
-                                  : "1px solid #ccc",
-                            }}
-                          />
-                        ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* QUANTITY */}
-                <div className="quantity-controls my-3 my-3">
-                  <button
-                    className="btn btn-outline-dark"
-                    onClick={handleDecrement}
-                  >
-                    -
-                  </button>
-
-                  <input
-                    type="number"
-                    value={quantity}
-                    readOnly
-                    style={{ textAlign: "center" }}
-                  />
-
-                  <button
-                    className="btn btn-outline-dark"
-                    onClick={handleIncrement}
-                  >
-                    +
-                  </button>
-                </div>
-
-                {/* BUTTONS */}
-                <button
-                  className="btn-add-to-cart"
-                  onClick={(e) => handleAddToCart(productDetails?.id)}
-                >
-                  Add to Cart
-                </button>
-
-                <button className="btn-shop-pay" onClick={handleBuyNow}>
-                  Buy Now
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    )}
-
-    <Addcart open={isOpen} close={() => setIsOpen(false)} />
-  </div>
-);
+  );
 }
-
-
 
 const styles = {
   overlay: {

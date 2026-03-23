@@ -130,7 +130,7 @@ export default function Addcart({ open, close }) {
 
     // 🔥 AGAR TOKEN NAHI HAI (Guest User)
     if (!token) {
-      dispatch(removeFromCart(item.product_id));
+      dispatch(removeFromCart(item));
       return;
     }
 

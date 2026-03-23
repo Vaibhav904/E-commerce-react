@@ -9,6 +9,8 @@ import {
   FaCog,
 } from "react-icons/fa";
 import { CiCircleList } from "react-icons/ci";
+import { FaBoxOpen, FaImage, FaStar, FaStore, FaListAlt } from "react-icons/fa";
+import { FaFileInvoice } from "react-icons/fa";
 
 const AdminSidebar = () => {
   const [activeItem, setActiveItem] = useState("");
@@ -17,12 +19,12 @@ const AdminSidebar = () => {
   const menuItems = [
     { id: "dashboard", icon: <FaHome />, label: "Dashboard", path: "/admin/dashboard" },
     { id: "products", icon: <FaShoppingBag />, label: "Products",  path: "/adminproducts" },
-    { id: "orders", icon: <FaShoppingCart />, label: "Category",  path: "/order" },
-   { id: "Subcategory", icon: <FaShoppingCart />, label: "Banner Update",  path: "/bannerlisting" },
+      { id: "orders", icon: <FaBoxOpen />, label: "Category", path: "/order" },
+   { id: "Subcategory", icon: <FaImage />, label: "Banner Update",  path: "/bannerlisting" },
     { id: "customers", icon: <FaUsers />, label: "Customers",  path: "/customer" },
-     { id: "Specialproduct", icon: <FaUsers />, label: "Special Product",  path: "/Specialproduct" },
-      { id: "orderlisting", icon: <CiCircleList />, label: "Order Listing",  path: "/customer-orderlisting" },
-    { id: "vendorlisting", icon: <FaChartLine />, label: "Vendor-Listing",  path: "/vendorlisting" },
+     { id: "Specialproduct", icon: <FaStar />, label: "Special Product",  path: "/Specialproduct" },
+      { id: "orderlisting", icon: <FaFileInvoice />, label: "Order Listing",  path: "/customer-orderlisting" },
+    { id: "vendorlisting", icon: <FaStore />, label: "Vendor-Listing",  path: "/vendorlisting" },
     { id: "vendorpayment", icon: <FaChartLine />, label: "Vendor-Payment",  path: "/vendorpayment" },
     // { id: "settings", icon: <FaCog />, label: "Settings", path: "/settings" },
   ];

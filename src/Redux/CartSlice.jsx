@@ -9,25 +9,25 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action) => {
-  const item = action.payload;
+      const item = action.payload;
 
-  const existing = state.cart.find(
-    (i) =>
-      i.product_id === item.product_id &&
-      i.variant_id === item.variant_id &&
-      JSON.stringify(i.variant_attribute_id) ===
-        JSON.stringify(item.variant_attribute_id)
-  );
+      const existing = state.cart.find(
+        (i) =>
+          i.product_id === item.product_id &&
+          i.variant_id === item.variant_id &&
+          JSON.stringify(i.variant_attribute_id) ===
+            JSON.stringify(item.variant_attribute_id),
+      );
 
-  if (existing) {
-    existing.quantity += item.quantity; // ✅ use selected quantity
-  } else {
-    state.cart.push({
-      ...item,
-      quantity: item.quantity, // ✅ use selected quantity
-    });
-  }
-},
+      if (existing) {
+        existing.quantity += item.quantity; // ✅ use selected quantity
+      } else {
+        state.cart.push({
+          ...item,
+          quantity: item.quantity, // ✅ use selected quantity
+        });
+      }
+    },
 
     decreaseQty: (state, action) => {
       const product_id = action.payload;
@@ -38,7 +38,27 @@ const cartSlice = createSlice({
     },
 
     removeFromCart: (state, action) => {
-      state.cart = state.cart.filter((item) => item.product_id !== action.payload);
+      console.log("action", action.payload);
+      console.log("state first cart item", state.cart?.[0]);
+
+      state.cart = state.cart.filter((item) => {
+        const sameProduct = item.product_id === action.payload.product_id;
+
+        // Compare variant_attribute_id arrays deeply and safely
+        const sameVariant =
+          Array.isArray(item.variant_attribute_id) &&
+          Array.isArray(action.payload.variant_attribute_id) &&
+          item.variant_attribute_id.length ===
+            action.payload.variant_attribute_id.length &&
+          item.variant_attribute_id.every(
+            (val, idx) => val === action.payload.variant_attribute_id[idx],
+          );
+
+        // Keep item only if it does NOT match both product and variant
+        return !(sameProduct && sameVariant);
+      });
+
+      console.log("Updated cart:", state.cart);
     },
 
     // 🔥 THIS IS REQUIRED

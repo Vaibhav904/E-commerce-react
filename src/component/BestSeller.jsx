@@ -11,16 +11,15 @@ import { useSelector, useDispatch } from "react-redux";
 import { setBuyNowProduct } from "../Redux/buyNowSlice";
 import { useNavigate } from "react-router-dom";
 
-
 export default function BestSeller() {
   const { token } = useContext(AuthContext);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   /* ================= STATES ================= */
-const [products, setProducts] = useState([]);
-const [product, setProduct] = useState(null);
-const [isWishlisted, setIsWishlisted] = useState(false);
-const [wishlist, setWishlist] = useState({});
+  const [products, setProducts] = useState([]);
+  const [product, setProduct] = useState(null);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [wishlist, setWishlist] = useState({});
   const [loading, setLoading] = useState(false);
   const [selectedProcess, setSelectedProcess] = useState("best");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -31,11 +30,12 @@ const [wishlist, setWishlist] = useState({});
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState(null);
- 
+  console.log("selectedVariant", selectedVariant);
+
   const [selectedSizeId, setSelectedSizeId] = useState(null);
   const [selectedColorId, setSelectedColorId] = useState(null);
-  console.log('selectedSizeId------', selectedSizeId);
-  console.log('selectedColorId------', selectedColorId);
+  console.log("selectedSizeId------", selectedSizeId);
+  console.log("selectedColorId------", selectedColorId);
   const buyNowProduct = useSelector((state) => state.buyNow);
 
   console.log("buyNowProduct", buyNowProduct);
@@ -44,7 +44,7 @@ const [wishlist, setWishlist] = useState({});
     if (!selectedVariant) return;
 
     const selectedAttributes = getSelectedAttributeIds(selectedVariant);
-    console.log('selectedAttributes------------',selectedAttributes)
+    console.log("selectedAttributes------------", selectedAttributes);
     dispatch(
       setBuyNowProduct({
         product_id: productDetails.id,
@@ -60,69 +60,67 @@ const [wishlist, setWishlist] = useState({});
     navigate("/checkout");
   };
 
+  const handleWishlistToggle = async (e, product) => {
+    e.stopPropagation();
 
+    const token = localStorage.getItem("token");
 
-const handleWishlistToggle = async (e, product) => {
-  e.stopPropagation();
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    navigate("/login");
-    return;
-  }
-
-  try {
-    const detailRes = await axios.get(
-      `http://tech-shop.techsaga.live/api/product-details/${product.slug}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
+    try {
+      const detailRes = await axios.get(
+        `http://tech-shop.techsaga.live/api/product-details/${product.slug}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
         },
-      }
-    );
+      );
 
-    console.log("my details", detailRes);
+      console.log("my details", detailRes);
 
-    const variantId = detailRes.data.product?.variants?.[0]?.variant_id;
-    console.log("my variantId", variantId);
+      const variantId = detailRes.data.product?.variants?.[0]?.variant_id;
+      console.log("my variantId", variantId);
 
-    const res = await axios.post(
-      "http://tech-shop.techsaga.live/api/wishlist/toggle",
-      {
-        product_id: product.id,
-        variant_id: variantId,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
+      const res = await axios.post(
+        "http://tech-shop.techsaga.live/api/wishlist/toggle",
+        {
+          product_id: product.id,
+          variant_id: variantId,
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        },
+      );
 
-    console.log("wishlist response", res.data);
+      console.log("wishlist response", res.data);
 
-    // ⭐ UI update
-    setProducts((prev) =>
-      prev.map((item) =>
-        item.id === product.id
-          ? {
-              ...item,
-              in_wishlist: !item.in_wishlist,
-            }
-          : item
-      )
-    );
-  } catch (error) {
-    console.log("Wishlist toggle failed", error.response?.data);
-  }
-};
+      // ⭐ UI update
+      setProducts((prev) =>
+        prev.map((item) =>
+          item.id === product.id
+            ? {
+                ...item,
+                in_wishlist: !item.in_wishlist,
+              }
+            : item,
+        ),
+      );
+    } catch (error) {
+      console.log("Wishlist toggle failed", error.response?.data);
+    }
+  };
 
-useEffect(() => {
-  setIsWishlisted(product?.in_wishlist);
-}, [product]);
+  useEffect(() => {
+    setIsWishlisted(product?.in_wishlist);
+  }, [product]);
   /* ================= DROPDOWN DATAello ================= */
   const processes = {
     best: {
@@ -143,26 +141,26 @@ useEffect(() => {
     }
   };
   /* ================= PRODUCT LIST API ================= */
- const fetchProducts = async (apiUrl) => {
-  try {
-    setLoading(true);
+  const fetchProducts = async (apiUrl) => {
+    try {
+      setLoading(true);
 
-    const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
-    const res = await axios.get(apiUrl, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    });
+      const res = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
 
-    setProducts(res.data.products || []);
-  } catch (error) {
-    console.error("Product List Error:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+      setProducts(res.data.products || []);
+    } catch (error) {
+      console.error("Product List Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchCart = async () => {
     try {
@@ -200,7 +198,7 @@ useEffect(() => {
           {
             product_id: productDetails.id,
             variant_id: selectedVariant.variant_id,
-            variant_attribute_id: [selectedSizeId,selectedColorId],
+            variant_attribute_id: [selectedSizeId, selectedColorId],
             quantity,
           },
           {
@@ -213,18 +211,18 @@ useEffect(() => {
 
         await fetchCart();
       } else {
-       dispatch(
-  addToCart({
-    product_id: productDetails.id,
-    variant_id: selectedVariant.variant_id,
-    variant_attribute_id: [selectedSizeId, selectedColorId], // 👈 IMPORTANT
-    title: productDetails.title,
-    price: selectedVariant.sale_price,
-    image:
-      selectedVariant.images?.[0] || selectedVariant.thumbnail || "",
-    quantity,
-  }),
-);
+        dispatch(
+          addToCart({
+            product_id: productDetails.id,
+            variant_id: selectedVariant.variant_id,
+            variant_attribute_id: [selectedSizeId, selectedColorId], // 👈 IMPORTANT
+            title: productDetails.title,
+            price: selectedVariant.sale_price,
+            image:
+              selectedVariant.images?.[0] || selectedVariant.thumbnail || "",
+            quantity,
+          }),
+        );
       }
     } catch (error) {
       console.log("Add to cart failed", error);
@@ -257,46 +255,48 @@ useEffect(() => {
   const makeSlug = (text) => text?.toLowerCase().trim().replace(/\s+/g, "-");
 
   /* ================= PRODUCT DETAILS API (SLUG BASED) ================= */
-const fetchProductDetails = async (product) => {
-  try {
-    setDetailsLoading(true);
-    setQuantity(1);
+  const fetchProductDetails = async (product) => {
+    try {
+      setDetailsLoading(true);
+      setQuantity(1);
 
-    const slug = product?.slug
-      ? product.slug
-      : makeSlug(product?.title);
+      const slug = product?.slug ? product.slug : makeSlug(product?.title);
 
-    const res = await axios.get(
-      `http://tech-shop.techsaga.live/api/product-details/${slug}`
-    );
-
-    const productData = res?.data?.product;
-
-    if (!productData) return;
-
-    setProductDetails(productData);
-    setCurrentImageIndex(0);
-    setShowModal(true);
-
-    // Default Variant Auto Select
-    if (productData?.variants?.length > 0) {
-            const defaultVariant = productData.variants[0]?.attributes[0]?.id;
-            console.log('defaultVariant----------------',defaultVariant)
-      // const defaultVariant = productData.variants[0];
-      setSelectedVariant(defaultVariant);
-
-      const firstColor = defaultVariant?.attributes?.find(
-        (a) => a.attribute_name?.toLowerCase() === "color"
+      const res = await axios.get(
+        `http://tech-shop.techsaga.live/api/product-details/${slug}`,
       );
 
-      setSelectedColorId(firstColor?.id || null);
+      const productData = res?.data?.product;
+
+      if (!productData) return;
+
+      setProductDetails(productData);
+      setCurrentImageIndex(0);
+      setShowModal(true);
+
+      // Default Variant Auto Select
+      if (productData?.variants?.length > 0) {
+        const defaultVariant = productData.variants[0]?.attributes[0]?.id;
+        console.log("defaultVariant----------------", defaultVariant);
+        // const defaultVariant = productData.variants[0];
+        setSelectedVariant(defaultVariant);
+
+        const firstColor = defaultVariant?.attributes?.find(
+          (a) => a.attribute_name?.toLowerCase() === "color",
+        );
+        const firstSize = defaultVariant?.attributes?.find(
+          (a) => a.attribute_name?.toLowerCase() === "size",
+        );
+
+        setSelectedSizeId(firstSize?.id || null);
+        setSelectedColorId(firstColor?.id || null);
+      }
+    } catch (error) {
+      console.error("Product Details Error:", error);
+    } finally {
+      setDetailsLoading(false);
     }
-  } catch (error) {
-    console.error("Product Details Error:", error);
-  } finally {
-    setDetailsLoading(false);
-  }
-};
+  };
 
   /* ================= IMAGE SLIDER ================= */
   // const nextImage = () => {
@@ -311,8 +311,6 @@ const fetchProductDetails = async (product) => {
   //   );
   // };
 
- 
-
   const getSelectedAttributeIds = (variant) => {
     if (!variant?.attributes) return [];
     return variant.attributes.map((attr) => ({
@@ -322,72 +320,72 @@ const fetchProductDetails = async (product) => {
     }));
   };
 
-
   const getImages = () => {
-  if (selectedVariant?.images?.length > 0) {
-    return selectedVariant.images;
-  }
-  return productDetails?.images || [];
-};
+    if (selectedVariant?.images?.length > 0) {
+      return selectedVariant.images;
+    }
+    return productDetails?.images || [];
+  };
 
-const nextImage = () => {
-  const images = getImages();
-  if (images.length === 0) return;
+  const nextImage = () => {
+    const images = getImages();
+    if (images.length === 0) return;
 
-  setCurrentImageIndex((prev) =>
-    prev === images.length - 1 ? 0 : prev + 1
-  );
-};
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
 
-const prevImage = () => {
-  const images = getImages();
-  if (images.length === 0) return;
+  const prevImage = () => {
+    const images = getImages();
+    if (images.length === 0) return;
 
-  setCurrentImageIndex((prev) =>
-    prev === 0 ? images.length - 1 : prev - 1
-  );
-};
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
 
-useEffect(() => {
-  if (!showModal) return;
+  useEffect(() => {
+    if (!showModal) return;
 
-  const images =
-    selectedVariant?.images?.length > 0
-      ? selectedVariant.images
-      : productDetails?.images || [];
+    const images =
+      selectedVariant?.images?.length > 0
+        ? selectedVariant.images
+        : productDetails?.images || [];
 
-  if (images.length <= 1) return;
+    if (images.length <= 1) return;
 
-  const interval = setInterval(() => {
-    setCurrentImageIndex((prev) =>
-      prev === images.length - 1 ? 0 : prev + 1
-    );
-  }, 3000); // 3 seconds
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) =>
+        prev === images.length - 1 ? 0 : prev + 1,
+      );
+    }, 3000); // 3 seconds
 
-  return () => clearInterval(interval);
-}, [showModal, selectedVariant, productDetails]);
+    return () => clearInterval(interval);
+  }, [showModal, selectedVariant, productDetails]);
 
-useEffect(() => {
-  if (productDetails?.variants?.length > 0) {
-    const firstVariant = productDetails.variants[0];
+  useEffect(() => {
+    if (productDetails?.variants?.length > 0) {
+      const firstVariant = productDetails.variants[0];
 
-    setSelectedVariant(firstVariant);
+      setSelectedVariant(firstVariant);
 
-    const firstColor = firstVariant?.attributes?.find(
-      (a) => a.attribute_name?.toLowerCase() === "color"
-    );
+      const firstColor = firstVariant?.attributes?.find(
+        (a) => a.attribute_name?.toLowerCase() === "color",
+      );
+      const firstSize = firstVariant?.attributes?.find(
+        (a) => a.attribute_name?.toLowerCase() === "size",
+      );
 
-    setSelectedColorId(firstColor?.id || null);
-  }
-}, [productDetails]);
+      setSelectedSizeId(firstSize?.id || null);
 
-console.log({
-  product_id: productDetails?.id,
-  variant_id: selectedVariant?.variant_id,
-  quantity,
-});
+      setSelectedColorId(firstColor?.id || null);
+    }
+  }, [productDetails]);
 
-console.log("my produc t",product);
+  console.log({
+    product_id: productDetails?.id,
+    variant_id: selectedVariant?.variant_id,
+    quantity,
+  });
+
+  console.log("my produc t", product);
 
   /* ================= JSX ================= */
   return (
@@ -476,16 +474,16 @@ console.log("my produc t",product);
 
                     <div className="btn-selectwish">
                       <div className="whislist-icon">
-     <button>
- <CiHeart
-  size={20}
-  style={{
-    color: product?.in_wishlist ? "red" : "#ccc",
-    cursor: "pointer",
-  }}
-  onClick={(e) => handleWishlistToggle(e, product)}
-/>
-</button>
+                        <button>
+                          <CiHeart
+                            size={20}
+                            style={{
+                              color: product?.in_wishlist ? "red" : "#ccc",
+                              cursor: "pointer",
+                            }}
+                            onClick={(e) => handleWishlistToggle(e, product)}
+                          />
+                        </button>
 
                         <button onClick={(e) => e.stopPropagation()}>
                           <FaEye />
@@ -523,193 +521,179 @@ console.log("my produc t",product);
 
       {/* ================= MODAL ================= */}
       {showModal && productDetails && (
-  <div style={styles.overlay}>
-    <div style={styles.modal}>
-      <button
-        onClick={() => setShowModal(false)}
-        style={styles.closeButton}
-      >
-        ×
-      </button>
+        <div style={styles.overlay}>
+          <div style={styles.modal}>
+            <button
+              onClick={() => setShowModal(false)}
+              style={styles.closeButton}
+            >
+              ×
+            </button>
 
-      {detailsLoading ? (
-        <p className="p-4">Loading...</p>
-      ) : (
-        <div style={styles.content}>
-          {/* LEFT IMAGE */}
-<div style={styles.imageSection}>
-  <div style={styles.mainImageContainer}>
-    <img
-      src={
-        (
-          selectedVariant?.images?.length > 0
-            ? selectedVariant.images
-            : productDetails?.images
-        )?.[currentImageIndex] || "https://via.placeholder.com/400"
-      }
-      alt={productDetails?.title}
-      style={styles.mainImage}
-    />
+            {detailsLoading ? (
+              <p className="p-4">Loading...</p>
+            ) : (
+              <div style={styles.content}>
+                {/* LEFT IMAGE */}
+                <div style={styles.imageSection}>
+                  <div style={styles.mainImageContainer}>
+                    <img
+                      src={
+                        (selectedVariant?.images?.length > 0
+                          ? selectedVariant.images
+                          : productDetails?.images)?.[currentImageIndex] ||
+                        "https://via.placeholder.com/400"
+                      }
+                      alt={productDetails?.title}
+                      style={styles.mainImage}
+                    />
 
-    {(
-      selectedVariant?.images?.length > 1 ||
-      productDetails?.images?.length > 1
-    ) && (
-      <>
-        <button onClick={prevImage} style={styles.navLeft}>
-          <FaAngleLeft />
-        </button>
+                    {(selectedVariant?.images?.length > 1 ||
+                      productDetails?.images?.length > 1) && (
+                      <>
+                        <button onClick={prevImage} style={styles.navLeft}>
+                          <FaAngleLeft />
+                        </button>
 
-        <button onClick={nextImage} style={styles.navRight}>
-          <FaAngleRight />
-        </button>
-      </>
-    )}
-  </div>
-</div>
+                        <button onClick={nextImage} style={styles.navRight}>
+                          <FaAngleRight />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
 
-          {/* RIGHT DETAILS */}
-          <div style={styles.detailsSection}>
-            <h2>{productDetails?.title}</h2>
+                {/* RIGHT DETAILS */}
+                <div style={styles.detailsSection}>
+                  <h2>{productDetails?.title}</h2>
 
-            {/* DESCRIPTION */}
-            <p style={{ color: "#666" }}>
-              {productDetails?.description || "No description available"}
-            </p>
+                  {/* DESCRIPTION */}
+                  <p style={{ color: "#666" }}>
+                    {productDetails?.description || "No description available"}
+                  </p>
 
-            {/* PRICE */}
-            <h4>
-              ₹{selectedVariant?.sale_price || productDetails?.Salesprice}
-              <del className="ps-2 text-muted">
-                ₹{selectedVariant?.price || productDetails?.price}
-              </del>
-            </h4>
+                  {/* PRICE */}
+                  <h4>
+                    ₹{selectedVariant?.sale_price || productDetails?.Salesprice}
+                    <del className="ps-2 text-muted">
+                      ₹{selectedVariant?.price || productDetails?.price}
+                    </del>
+                  </h4>
 
-            {/* SIZE */}
-            {productDetails?.variants?.length > 0 && (
-              <div className="my-3">
-                <label className="fw-bold">Size:</label>
-                <div className="d-flex gap-2 mt-2 flex-wrap">
-                  {productDetails.variants.map((variant) => {
-                    const sizeAttr = variant?.attributes?.find(
-                      (a) =>
-                        a.attribute_name?.toLowerCase() === "size"
-                    );
+                  {/* SIZE */}
+                  {productDetails?.variants?.length > 0 && (
+                    <div className="my-3">
+                      <label className="fw-bold">Size:</label>
+                      <div className="d-flex gap-2 mt-2 flex-wrap">
+                        {productDetails.variants.map((variant) => {
+                          const sizeAttr = variant?.attributes?.find(
+                            (a) => a.attribute_name?.toLowerCase() === "size",
+                          );
 
-                    if (!sizeAttr) return null;
+                          if (!sizeAttr) return null;
 
-                    return (
-                      <button
-                        key={variant.variant_id}
-                        className={`btn ${
-                          selectedVariant?.variant_id ===
-                          variant.variant_id
-                            ? "btn-dark"
-                            : "btn-outline-dark"
-                        }`}
-                        onClick={() => {
-                          setSelectedVariant(variant);
+                          return (
+                            <button
+                              key={variant.variant_id}
+                              className={`btn ${
+                                selectedVariant?.variant_id ===
+                                variant.variant_id
+                                  ? "btn-dark"
+                                  : "btn-outline-dark"
+                              }`}
+                              onClick={() => {
+                                setSelectedVariant(variant);
 
-                          const firstColor =
-                            variant?.attributes?.find(
-                              (a) =>
-                                a.attribute_name?.toLowerCase() ===
-                                "size"
-                            );
+                                const firstColor = variant?.attributes?.find(
+                                  (a) =>
+                                    a.attribute_name?.toLowerCase() === "size",
+                                );
 
-                          setSelectedSizeId(firstColor?.id);
-                        }}
-                      >
-                        {sizeAttr?.value}
-                      </button>
-                    );
-                  })}
+                                setSelectedSizeId(firstColor?.id);
+                              }}
+                            >
+                              {sizeAttr?.value}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* COLOR */}
+                  {selectedVariant?.attributes?.some(
+                    (a) => a.attribute_name?.toLowerCase() === "color",
+                  ) && (
+                    <div className="my-3">
+                      <label className="fw-bold">Color:</label>
+                      <div className="d-flex gap-3 mt-2">
+                        {selectedVariant.attributes
+                          .filter(
+                            (a) => a.attribute_name?.toLowerCase() === "color",
+                          )
+                          .map((colorAttr) => (
+                            <div
+                              key={colorAttr.id}
+                              onClick={() => setSelectedColorId(colorAttr.id)}
+                              style={{
+                                width: "35px",
+                                height: "35px",
+                                borderRadius: "50%",
+                                backgroundColor:
+                                  colorAttr?.value?.toLowerCase(),
+                                cursor: "pointer",
+                                border:
+                                  selectedColorId === colorAttr.id
+                                    ? "3px solid black"
+                                    : "1px solid #ccc",
+                              }}
+                            />
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* QUANTITY */}
+                  <div className="quantity-controls my-3 my-3">
+                    <button
+                      className="btn btn-outline-dark"
+                      onClick={handleDecrement}
+                    >
+                      -
+                    </button>
+
+                    <input
+                      type="number"
+                      value={quantity}
+                      readOnly
+                      style={{ textAlign: "center" }}
+                    />
+
+                    <button
+                      className="btn btn-outline-dark"
+                      onClick={handleIncrement}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  {/* BUTTONS */}
+                  <button
+                    className="btn-add-to-cart"
+                    onClick={(e) => handleAddToCart(productDetails?.id)}
+                  >
+                    Add to Cart
+                  </button>
+
+                  <button className="btn-shop-pay" onClick={handleBuyNow}>
+                    Buy Now
+                  </button>
                 </div>
               </div>
             )}
-
-            {/* COLOR */}
-            {selectedVariant?.attributes?.some(
-              (a) =>
-                a.attribute_name?.toLowerCase() === "color"
-            ) && (
-              <div className="my-3">
-                <label className="fw-bold">Color:</label>
-                <div className="d-flex gap-3 mt-2">
-                  {selectedVariant.attributes
-                    .filter(
-                      (a) =>
-                        a.attribute_name?.toLowerCase() ===
-                        "color"
-                    )
-                    .map((colorAttr) => (
-                      <div
-                        key={colorAttr.id}
-                        onClick={() =>
-                          setSelectedColorId(colorAttr.id)
-                        }
-                        style={{
-                          width: "35px",
-                          height: "35px",
-                          borderRadius: "50%",
-                          backgroundColor:
-                            colorAttr?.value?.toLowerCase(),
-                          cursor: "pointer",
-                          border:
-                            selectedColorId === colorAttr.id
-                              ? "3px solid black"
-                              : "1px solid #ccc",
-                        }}
-                      />
-                    ))}
-                </div>
-              </div>
-            )}
-
-            {/* QUANTITY */}
-            <div className="quantity-controls my-3 my-3">
-              <button
-                className="btn btn-outline-dark"
-                onClick={handleDecrement}
-              >
-                -
-              </button>
-
-              <input
-                type="number"
-                value={quantity}
-                readOnly
-                style={{ textAlign: "center" }}
-              />
-
-              <button
-                className="btn btn-outline-dark"
-                onClick={handleIncrement}
-              >
-                +
-              </button>
-            </div>
-
-            {/* BUTTONS */}
-            <button
-              className="btn-add-to-cart"
-             onClick={(e) => handleAddToCart(productDetails?.id)}
-            >
-              Add to Cart
-            </button>
-
-            <button
-              className="btn-shop-pay"
-              onClick={handleBuyNow}
-            >
-              Buy Now
-            </button>
           </div>
         </div>
       )}
-    </div>
-  </div>
-)}
       <Addcart open={isOpen} close={(e) => setIsOpen(false)} />
     </>
   );
