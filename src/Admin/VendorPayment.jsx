@@ -138,6 +138,7 @@ const handleApprove = async () => {
         color: "#fff",
         border: "none",
         borderRadius: "5px",
+            fontsize: "16px",
         cursor: row.status === "pending" ? "pointer" : "not-allowed",
       }}
     >

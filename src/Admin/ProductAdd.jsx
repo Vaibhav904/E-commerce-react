@@ -226,7 +226,9 @@ const addVariant = () => {
       alert("Product Added Successfully ✅");
     } catch (err) {
       console.log(err.response?.data);
-      alert("Product Add Failed ❌");
+      // alert("Product Add Failed ❌");
+            console.log('err.message---------',err.response?.data.message);
+      alert(err.response?.data.message);
     }
   };
 

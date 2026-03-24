@@ -68,6 +68,7 @@ import VendorProfile from "./Vendor/VendarAdmin/VendorProfile";
 
 import VendorPayment from "./Admin/VendorPayment";
 import VendorOrderDetails from "./Vendor/VendarAdmin/VendorOrderDetails";
+import Updatepassword from "./Admin/Updatepassword";
 
 function App() {
   const { token } = useContext(AuthContext); // 🔥 token check
@@ -163,6 +164,10 @@ function App() {
         <Route
           path="/addbanner"
           element={token ? <AddBanner /> : <Navigate to="/admin" replace />}
+        />
+          <Route
+          path="/Updatepassword"
+          element={token ? <Updatepassword/>: <Navigate to="/admin" replace />}
         />
         <Route
           path="/orderdetails/:id"

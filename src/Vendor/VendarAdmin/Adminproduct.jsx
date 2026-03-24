@@ -183,30 +183,17 @@ useEffect(() => {
     {
       name: "Actions",
       cell: (row) => (
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div  style={{ display: "flex",  }}>
            <Link
             to={`/vender-productedit/${row.id}`}
-            style={{
-              padding: "4px 8px",
-              backgroundColor: "#4caf50",
-              color: "#fff",
-              borderRadius: "4px",
-              textDecoration: "none",
-            }}
+           className="cus-edit text-decoration-none"
           >
             Edit
           </Link>
 
-          <button
+          <button className="del-btn"
             onClick={() => handleDelete(row.id)}
-            style={{
-              padding: "4px 8px",
-              backgroundColor: "red",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
+          
           >
             Delete
           </button>

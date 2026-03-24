@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Form from "react-bootstrap/Form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import CartImage from '../assets/Image/common_image.png';
 import {
   addToCart,
   decreaseQty,
@@ -265,6 +266,8 @@ export default function Addcart({ open, close }) {
         </div>
 
         <div className="cart-body">
+          {cartItems && cartItems.length > 0 ? (
+            <>
           {cartItems?.map((item) => (
             <div
               className="cart-item"
@@ -383,6 +386,15 @@ export default function Addcart({ open, close }) {
           <button className="checkout-btn" onClick={handleCheckout}>
             <i className="fas fa-lock me-2"></i> Proceed to Checkout
           </button>
+          </>
+          ) : (
+            <div className="text-center mt-5">
+              <p>
+                <img className="w-75" src={CartImage}/>
+              </p>
+              <p className="p_tag">No products added</p>
+            </div>
+          )}
 
           {/* <div className="view-cart">
             <a href="#" className="view-cart-link">

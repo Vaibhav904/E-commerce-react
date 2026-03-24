@@ -4787,3 +4787,33 @@ button.btn.btn-link.total_order{
     font-weight: 600;
   }
 }
+a.cus-edit {
+    background: #ffc107;
+    color: black;
+    padding: 4px 15px;
+    font-size: 16px !important;
+    border-radius: 6px;
+
+}
+.del-btn{
+    background: #dc3545;
+       color: white;
+    padding: 9px 15px;
+    font-size: 17px;
+    border-radius: 6px;
+    line-height: 12px;
+    border: unset;
+    margin-left: 10px;
+}
+
+button.btn.btn-primary.cus-edit.py-1 {
+     background: #ffc107;
+    color: black;
+    padding: 4px 15px !important;
+    font-size: 17px;
+    border-radius: 6px;
+}
+
+button.badge.bg-success {
+    font-size: 15px;
+}

@@ -13,9 +13,14 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setCartFromApi } from "../Redux/CartSlice";
 import { useSelector } from "react-redux";
-
+import { useContext } from "react";
+import { AuthContext } from "../Context/AuthContext";
 const Login = () => {
-  const navigate = useNavigate();
+  // token setting
+  //  const { token } = useContext(AuthContext);
+   const { saveToken } = useContext(AuthContext);
+  // token setting
+   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -58,14 +63,25 @@ const Login = () => {
       );
 
       if (res.data.status) {
-        setSuccessMessage("Login successful ✅");
 
-        const token = res.data?.data?.token;
-        const userData = res.data.data;
+  setSuccessMessage("Login successful ✅");
 
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("name", userData.name);
+  const token = res.data?.data?.token;
+  const userData = res.data.data;
+
+  saveToken(token); // ✅ IMPORTANT
+
+  localStorage.setItem("user", JSON.stringify(userData));
+  localStorage.setItem("name", userData.name);
+
+        // setSuccessMessage("Login successful ✅");
+
+        // const token = res.data?.data?.token;
+        // const userData = res.data.data;
+
+        // localStorage.setItem("token", token);
+        // localStorage.setItem("user", JSON.stringify(userData));
+        // localStorage.setItem("name", userData.name);
 
         // 🛒 Redux cart → API cart sync
         // 🛒 Guest cart → API sync

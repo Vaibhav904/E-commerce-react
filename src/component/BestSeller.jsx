@@ -12,7 +12,8 @@ import { setBuyNowProduct } from "../Redux/buyNowSlice";
 import { useNavigate } from "react-router-dom";
 
 export default function BestSeller() {
-  const { token } = useContext(AuthContext);
+   const { token } = useContext(AuthContext);
+  // const token = localStorage.getItem('token');
   const dispatch = useDispatch();
   const navigate = useNavigate();
   /* ================= STATES ================= */

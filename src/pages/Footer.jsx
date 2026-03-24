@@ -59,7 +59,7 @@ export default function Footer() {
                 About Us
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link to="/careers">Careers</Link>
             </li>
             <li>
@@ -73,7 +73,7 @@ export default function Footer() {
             </li>
             <li>
               <Link to="/contact">Contact Us</Link>
-            </li>
+            </li> */}
           </ul>
         </div>
 

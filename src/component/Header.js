@@ -23,13 +23,14 @@ export default function Header() {
   const token = localStorage.getItem("token");
   // 🔥 NEW STATE (ONLY FOR SHOP)
   const [categories, setCategories] = useState([]);
+const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
 
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-
+const [productCategories, setProductCategories] = useState([]);
   const cartItems = useSelector((state) => state.cart.cart);
   console.log('cartItems', cartItems);
   // 🔥 FETCH CATEGORY (ONLY ADDITION)
@@ -110,6 +111,11 @@ export default function Header() {
     }
   };
 
+
+  useEffect(() => {
+  setIsLoggedIn(!!localStorage.getItem("token"));
+}, []);
+
   return (
     <div style={{ boxShadow: "0 4px 6px -2px rgba(0, 0, 0, 0.1)" }}>
       {/* ================= TOP BAR ================= */}
@@ -160,15 +166,15 @@ export default function Header() {
               <li className="nav-item dropdown">
                 <NavLink to="/page">Page ▾</NavLink>
                 <ul className="dropdown-menu">
-                  <li>
+                  {/* <li>
                     <Link to="/contact">Contact</Link>
-                  </li>
+                  </li> */}
                   <li>
                     <Link to="/about">About</Link>
                   </li>
-                  <li>
+                  {/* <li>
                     <Link to="/login">My Account</Link>
-                  </li>
+                  </li> */}
                 </ul>
               </li>
             </ul>
@@ -224,37 +230,37 @@ export default function Header() {
                     <strong>Hello {name || "Guest"}</strong>
                   </div>
 
-                  <ul>
-                    <li onClick={handleOrders}>Orders</li>
-                    <li onClick={() => navigate("/wishlist")}>Wishlist</li>
-                    {/* <li>Gift Cards</li>
-                    <li>Contact Us</li> */}
-                    {/* <li>Coupons</li> */}
-                    {/* <li onClick={() => navigate("/address")}>
-                      Saved Addresses
-                    </li> */}
-                    <li onClick={() => navigate("/profile")}>Edit Profile</li>
-                    <li
-                      className="logout"
-                      onClick={() => {
-                        // 1️⃣ token clear
-                        localStorage.removeItem("token");
-                        localStorage.removeItem("name"); //
-                        // 2️⃣ redux cart clear
-                        dispatch(clearCart());
+              <ul>
+                  {token && (
+                    <>
+                      <li onClick={handleOrders}>Orders</li>
+                      <li onClick={handelWishlist}>Wishlist</li>
+                      <li onClick={() => navigate("/profile")}>Edit Profile</li>
 
-                        // 3️⃣ redux-persist clear (agar use ho raha ho)
-                        localStorage.removeItem("persist:root");
-                        
-                        logout();
+                      <li
+                        className="logout"
+                        onClick={() => {
+                          localStorage.removeItem("token");
+                          localStorage.removeItem("name");
+                          localStorage.removeItem("persist:root");
 
-                        // 4️⃣ redirect
-                        navigate("/login", { replace: true });
-                      }}
-                    >
-                      Logout
+                          dispatch(clearCart());
+                          logout();
+
+                          navigate("/login", { replace: true });
+                        }}
+                      >
+                        Logout
+                      </li>
+                    </>
+                  )}
+
+                  {!token && (
+                    <li onClick={() => navigate("/login")}>
+                      Login
                     </li>
-                  </ul>
+                  )}
+              </ul>
                 </div>
               )}
             </li>

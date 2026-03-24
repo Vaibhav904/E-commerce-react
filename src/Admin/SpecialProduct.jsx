@@ -155,13 +155,13 @@ const handleDelete = async (id) => {
                             <td>
                               <Link
                                 to={`/specialedit/${item.id}`}
-                                className="btn btn-sm btn-warning me-2"
+                                className=" cus-edit"
                               >
                                 Edit
                               </Link>
 
                               <button
-                                className="btn btn-sm btn-danger"
+                                className="del-btn"
                                 onClick={() => handleDelete(item.id)}
                               >
                                 Delete

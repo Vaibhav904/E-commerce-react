@@ -251,25 +251,16 @@ const handleDelete = async (id) => {
       cell: (row) => (
         <div style={{ display: "flex", gap: "8px" }}>
           <Link
+          className="cus-edit"
             to={`/editcategory/${row.id}`}
-            style={{
-              padding: "4px 8px",
-              backgroundColor: "#4caf50",
-              color: "#fff",
-              borderRadius: "4px",
-            }}
+           
           >
             Edit
           </Link>
 
           <button
             onClick={() => handleDelete(row.id)}
-            style={{
-              padding: "4px 8px",
-              backgroundColor: "red",
-              color: "#fff",
-              borderRadius: "4px",
-            }}
+            className="del-btn"
           >
             Delete
           </button>

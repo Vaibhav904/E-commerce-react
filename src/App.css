@@ -36,3 +36,26 @@
     transform: rotate(360deg);
   }
 }
+.cus-edit {
+    background: #ffc107;
+    color: black;
+    padding: 4px 15px;
+    font-size: 17px;
+    border-radius: 6px;
+    line-height: 12px;
+}
+.del-btn{
+    background: #dc3545;
+       color: white;
+    padding: 9px 15px;
+    font-size: 17px;
+    border-radius: 6px;
+    line-height: 12px;
+    border: unset;
+    margin-left: 10px;
+}
+
+button.btn.btn-sm.btn-warning {
+    font-size: 17px;
+    padding: 5px 15px;
+}

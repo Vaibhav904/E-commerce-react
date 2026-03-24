@@ -15,7 +15,8 @@ export default function Alldetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { token } = useContext(AuthContext);
+  // const { token } = useContext(AuthContext);
+  const token = localStorage.getItem('token');
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -194,6 +195,7 @@ export default function Alldetail() {
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     try {
+      console.log('uivwbivbivbdivbwdibwtoken', token);
       if (token) {
         await axios.post(
           "http://tech-shop.techsaga.live/api/cart/add",

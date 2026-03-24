@@ -236,7 +236,8 @@
 //         <AdminHeader />
 //         <Outlet />
 
-//         <h2 className="dashboard-title">Product Overview</h2>
+//         <h2 className="dashboard-title">
+// </h2>
 
 //         <div className="container">
 //           <div className="add-product">
@@ -483,30 +484,17 @@ export default function Adminproduct() {
     {
       name: "Actions",
       cell: (row) => (
-        <div style={{ display: "flex", gap: "8px" }}>
-          <Link
+        <div style={{ display: "flex",  }}>
+          <Link className="cus-edit text-decoration-none"
             to={`/productedit/${row.id}`}
-            style={{
-              padding: "4px 8px",
-              backgroundColor: "#4caf50",
-              color: "#fff",
-              borderRadius: "4px",
-              textDecoration: "none",
-            }}
+           
           >
             Edit
           </Link>
 
-          <button
+          <button className="del-btn"
             onClick={() => handleDelete(row.id)}
-            style={{
-              padding: "4px 8px",
-              backgroundColor: "red",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
+           
           >
             Delete
           </button>

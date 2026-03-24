@@ -171,15 +171,17 @@ export default function SubCategory() {
                       <td>
                         <Link to={`/banneredit/${banner.id}`}>
                           <Button
-                            variant="warning"
-                            size="sm"
-                            className="me-2"
+                          className="cus-edit py-1"
+                       
+                          
+                           
                           >
                             Edit
                           </Button>
                         </Link>
 
                         <Button
+                        className="del-btn"
                           variant="danger"
                           size="sm"
                           onClick={() => handleDelete(banner.id)}
