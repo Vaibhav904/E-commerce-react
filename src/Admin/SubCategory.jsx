@@ -13,7 +13,7 @@ export default function SubCategory() {
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   // -----------------------------------
   // ✅ Fetch Banner Listing

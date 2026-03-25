@@ -22,7 +22,7 @@ export default function AddCategory() {
   // Fetch Category list for Subcategory dropdown
   useEffect(() => {
     const fetchCategories = async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("adminToken");
       try {
         const res = await axios.get(
           "http://tech-shop.techsaga.live/api/v1/category/categoryListing",
@@ -65,7 +65,7 @@ export default function AddCategory() {
       return;
     }
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("adminToken");
 
     try {
       setLoading(true);

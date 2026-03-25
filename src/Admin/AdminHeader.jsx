@@ -11,14 +11,19 @@ const AdminHeader = () => {
   const navigate = useNavigate();
   const { logout } = useContext(AuthContext); // context logout function
 
+
+
+  
   const handleLogout = () => {
-    logout(); // token remove + login state false
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("role");    
     setOpen(false);
   
 
     // 🚫 window.location.href — refresh karta hai (avoid)
     // ✅ navigate — bina refresh ke page change karega
-    navigate("/admin");
+window.location.href = "/admin";
+    // navigate("/admin");
   };
 
   return (

@@ -9,7 +9,7 @@ import axios from "axios";
 export default function EditCategory() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   const [mode, setMode] = useState("main");
   const [categories, setCategories] = useState([]);

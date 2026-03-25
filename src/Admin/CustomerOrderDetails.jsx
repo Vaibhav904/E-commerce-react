@@ -11,7 +11,7 @@ export default function CustomerOrderDetails() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   const downloadInvoice = () => {
   fetch(order.invoice_url)

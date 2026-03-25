@@ -390,7 +390,7 @@ export default function Addcart({ open, close }) {
           ) : (
             <div className="text-center mt-5">
               <p>
-                <img className="w-75" src={CartImage}/>
+                <img className="w-50" src={CartImage}/>
               </p>
               <p className="p_tag">No products added</p>
             </div>

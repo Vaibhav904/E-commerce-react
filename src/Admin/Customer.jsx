@@ -10,7 +10,7 @@ export default function Customer() {
     const [searchTerm, setSearchTerm] = useState(""); // Added search term state
 
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 const navigate = useNavigate();
   useEffect(() => {
     fetchCustomers();

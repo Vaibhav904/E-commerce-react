@@ -392,13 +392,13 @@ export default function BestSeller() {
   return (
     <>
       <section>
-        <h4 className="best-seller d-flex align-items-center gap-3">
-          <span>You are in</span>
+        <h4 className="best-seller d-flex align-items-center gap-2">
+          <span className="font_size_design">You are in</span>
 
           {/* DROPDOWN */}
           <div>
             <button
-              className="btn d-flex align-items-center"
+              className="btn d-flex align-items-center p-0"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               {currentProcess.name}
@@ -413,13 +413,13 @@ export default function BestSeller() {
                   className="dropdown-item"
                   onClick={() => handleSelect("best")}
                 >
-                  Best Sellers
+                  best sellers
                 </div>
                 <div
                   className="dropdown-item"
                   onClick={() => handleSelect("new")}
                 >
-                  New Arrival
+                  new arrivals
                 </div>
               </div>
             )}

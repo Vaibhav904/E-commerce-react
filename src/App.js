@@ -71,8 +71,9 @@ import VendorOrderDetails from "./Vendor/VendarAdmin/VendorOrderDetails";
 import Updatepassword from "./Admin/Updatepassword";
 
 function App() {
-  const { token } = useContext(AuthContext); // 🔥 token check
+  // const { token } = useContext(AuthContext); // 🔥 token check
   const vendorToken = localStorage.getItem("vendorToken");
+  const adminToken = localStorage.getItem("adminToken");
 
   const ProtectedVendorRoute = ({ children }) => {
     const vendorrToken = localStorage.getItem("vendorToken");
@@ -89,111 +90,111 @@ function App() {
         <Route
           path="/admin"
           element={
-            token ? <Navigate to="/admin/dashboard" replace /> : <Admin />
+            adminToken ? <Navigate to="/admin/dashboard" replace /> : <Admin />
           }
         />
 
         <Route
           path="/admin/dashboard"
-          element={token ? <Dashboard /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <Dashboard /> : <Navigate to="/admin" replace />}
         />
 
         {/* Other admin protected routes */}
         <Route
           path="/adminproducts"
-          element={token ? <Adminproduct /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <Adminproduct /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/order"
-          element={token ? <Order /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <Order /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/bannerlisting"
-          element={token ? <SubCategory /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <SubCategory /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/edit"
-          element={token ? <Edit /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <Edit /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/analytics"
-          element={token ? <Analytics /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <Analytics /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/settings"
-          element={token ? <Settings /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <Settings /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/customer"
-          element={token ? <Customer /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <Customer /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/specialproduct"
           element={
-            token ? <SpecialProduct /> : <Navigate to="/admin" replace />
+            adminToken ? <SpecialProduct /> : <Navigate to="/admin" replace />
           }
         />
 
         <Route
           path="/customer-orderlisting"
-          element={token ? <Orderlisting /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <Orderlisting /> : <Navigate to="/admin" replace />}
         />
 
         <Route
           path="/productadd"
-          element={token ? <ProductAdd /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <ProductAdd /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/addCategory"
-          element={token ? <AddCategory /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <AddCategory /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/editcategory/:id"
-          element={token ? <EditCategory /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <EditCategory /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/productedit/:id"
-          element={token ? <ProductEdit /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <ProductEdit /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/specialedit/:id"
           element={
-            token ? <SpecialProductEdit /> : <Navigate to="/admin" replace />
+            adminToken ? <SpecialProductEdit /> : <Navigate to="/admin" replace />
           }
         />
         <Route
           path="/addbanner"
-          element={token ? <AddBanner /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <AddBanner /> : <Navigate to="/admin" replace />}
         />
           <Route
           path="/Updatepassword"
-          element={token ? <Updatepassword/>: <Navigate to="/admin" replace />}
+          element={adminToken ? <Updatepassword/>: <Navigate to="/admin" replace />}
         />
         <Route
           path="/orderdetails/:id"
-          element={token ? <OrderDetails /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <OrderDetails /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/customerorderdetails/:id"
-          element={token ? <CustomerOrderDetails /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <CustomerOrderDetails /> : <Navigate to="/admin" replace />}
         />
 
         <Route
           path="/addspecial"
-          element={token ? <AddSpecial /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <AddSpecial /> : <Navigate to="/admin" replace />}
         />
         <Route
           path="/vendorlisting"
-          element={token ? <AdminVendor /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <AdminVendor /> : <Navigate to="/admin" replace />}
         />
           <Route
           path="/vendorpayment"
-          element={token ? <VendorPayment /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <VendorPayment /> : <Navigate to="/admin" replace />}
         />
 
         <Route
           path="/banneredit/:id"
-          element={token ? <BannerEdit /> : <Navigate to="/admin" replace />}
+          element={adminToken ? <BannerEdit /> : <Navigate to="/admin" replace />}
         />
 
         {/* Vendor page header---------------------------------------------- */}

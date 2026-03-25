@@ -9,7 +9,7 @@ export default function SpecialProduct() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   // ======================
   // FETCH SPECIAL PRODUCTS
@@ -18,7 +18,7 @@ const fetchSpecialProducts = async () => {
   try {
     setLoading(true);
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("adminToken");
 
     const res = await axios.get(
       "http://tech-shop.techsaga.live/api/v1/special-products",
@@ -50,7 +50,7 @@ const handleDelete = async (id) => {
   if (!window.confirm("Are you sure you want to delete this product?")) return;
 
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("adminToken");
 
     const res = await axios.post(
       "http://tech-shop.techsaga.live/api/v1/special-products/destroy",

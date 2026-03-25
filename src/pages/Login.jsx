@@ -18,7 +18,7 @@ import { AuthContext } from "../Context/AuthContext";
 const Login = () => {
   // token setting
   //  const { token } = useContext(AuthContext);
-   const { saveToken } = useContext(AuthContext);
+   const { saveToken,saveRole } = useContext(AuthContext);
   // token setting
    const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -67,9 +67,13 @@ const Login = () => {
   setSuccessMessage("Login successful ✅");
 
   const token = res.data?.data?.token;
+  const role = res.data?.data?.role;
+
   const userData = res.data.data;
 
   saveToken(token); // ✅ IMPORTANT
+  saveRole(role); // ✅ IMPORTANT
+
 
   localStorage.setItem("user", JSON.stringify(userData));
   localStorage.setItem("name", userData.name);

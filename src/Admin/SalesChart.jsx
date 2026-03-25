@@ -54,7 +54,7 @@ const SalesChart = () => {
 const [trafficData, setTrafficData] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("adminToken");
 
     axios
       .get("http://tech-shop.techsaga.live/api/v1/dashboard/total-sales", {
@@ -75,7 +75,7 @@ const [trafficData, setTrafficData] = useState(null);
 
 useEffect(() => {
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   axios.get(
     "http://tech-shop.techsaga.live/api/v1/dashboard/recent-orders",
@@ -97,7 +97,7 @@ useEffect(() => {
 
 useEffect(() => {
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   axios.get(
     "http://tech-shop.techsaga.live/api/v1/dashboard/total-customers",
@@ -119,7 +119,7 @@ useEffect(() => {
 
 useEffect(() => {
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   axios.get(
     "http://tech-shop.techsaga.live/api/v1/dashboard/yearly-sales",
@@ -157,7 +157,7 @@ useEffect(() => {
 
 
  useEffect(() => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   axios
     .get("http://tech-shop.techsaga.live/api/v1/analytics/current-year-traffic", {
@@ -209,7 +209,7 @@ useEffect(() => {
 }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("adminToken");
 
     axios
       .get("http://tech-shop.techsaga.live/api/v1/dashboard/total-orders", {

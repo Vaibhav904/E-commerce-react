@@ -430,7 +430,7 @@ export default function Orderlisting() {
   const { customerId } = state || {};
   const { vendor_id } = state || {};
   console.log('vendor_id', vendor_id);
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   // ================= FETCH ORDERS =================
   const customerfetchOrders = async (pageNo = 1, query = "") => {

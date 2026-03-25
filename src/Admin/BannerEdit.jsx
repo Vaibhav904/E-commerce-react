@@ -20,7 +20,7 @@ export default function BannerEdit() {
   const [oldImage, setOldImage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   // -----------------------------------
   // ✅ Fetch Single Banner (from list API)

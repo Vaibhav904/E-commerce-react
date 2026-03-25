@@ -1,9 +1,7 @@
 import React, { useState, useContext } from "react";
-import { AuthContext } from "../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Admin() {
-  const { saveToken } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -11,40 +9,79 @@ export default function Admin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setError("");
+//     setLoading(true);
 
-    try {
-      const response = await fetch(
-        "http://tech-shop.techsaga.live/api/v1/admin-auth",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+//     try {
+//       const response = await fetch(
+//         "http://tech-shop.techsaga.live/api/v1/admin-auth",
+//         {
+//           method: "POST",
+//           headers: { "Content-Type": "application/json" },
+//           body: JSON.stringify({ email, password }),
+//         }
+//       );
 
-      const data = await response.json();
-      setLoading(false);
+//       const data = await response.json();
+//       setLoading(false);
 
-      if (!response.ok) {
-        setError(data.message || "Invalid email or password");
-        return;
+//       if (!response.ok) {
+//         setError(data.message || "Invalid email or password");
+//         return;
+//       }
+//       console.log("data.token", data?.data?.role);
+//       // Save token to AuthContext (and maybe localStorage inside it)
+//       localStorage.setItem("adminToken", data?.data?.token);
+
+//       localStorage.setItem("role", data?.data?.role);
+//       // Redirect to dashboard WITHOUT page refresh
+// window.location.href = "/admin/dashboard";
+//       // navigate("/admin/dashboard");
+//     } catch (error) {
+//       setLoading(false);
+//       setError("Something went wrong. Try again.");
+//     }
+//   };
+
+
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
+
+  try {
+    const response = await fetch(
+      "http://tech-shop.techsaga.live/api/v1/admin-auth",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       }
-      console.log("data.token", data?.data?.token);
-      // Save token to AuthContext (and maybe localStorage inside it)
-      saveToken(data?.data?.token);
+    );
 
-      // Redirect to dashboard WITHOUT page refresh
-      navigate("/admin/dashboard");
-    } catch (error) {
-      setLoading(false);
-      setError("Something went wrong. Try again.");
+    const data = await response.json();
+    setLoading(false);
+
+    if (!response.ok) {
+      setError(data.message || "Invalid email or password");
+      return;
     }
-  };
 
+    // Save token
+    localStorage.setItem("adminToken", data?.data?.token);
+    localStorage.setItem("role", data?.data?.role);
+
+    // ✅ FIX: force reload so auth works instantly
+    window.location.href = "/admin/dashboard";
+
+  } catch (error) {
+    setLoading(false);
+    setError("Something went wrong. Try again.");
+  }
+};
   return (
     <div style={styles.container}>
       <form onSubmit={handleSubmit} style={styles.form}>

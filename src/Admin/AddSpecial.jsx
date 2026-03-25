@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function AddSpecial() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   const [form, setForm] = useState({
     title: "",

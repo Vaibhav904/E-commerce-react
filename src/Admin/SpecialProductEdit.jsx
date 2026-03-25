@@ -7,7 +7,7 @@ import axios from "axios";
 export default function SpecialProductEdit() {
   const { id } = useParams(); // route: /edit/:id
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   const [form, setForm] = useState({
     title: "",

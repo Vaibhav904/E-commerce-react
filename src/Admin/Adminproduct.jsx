@@ -274,7 +274,7 @@ export default function Adminproduct() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");  // Add state for search term
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
   const { state } = useLocation();
   const { customerId } = state || {};
   // Fetch products from API

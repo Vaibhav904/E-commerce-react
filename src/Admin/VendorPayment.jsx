@@ -12,7 +12,7 @@ export default function VendorPayment() {
   const [selectedRow, setSelectedRow] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   // ✅ Fetch Data
   const fetchCategories = async () => {

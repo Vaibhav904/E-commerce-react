@@ -763,7 +763,7 @@ import { Spinner } from "react-bootstrap";
 export default function ProductEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   const [loading, setLoading] = useState(true);
 

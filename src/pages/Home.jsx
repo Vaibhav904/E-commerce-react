@@ -450,7 +450,7 @@ export default function Home() {
       </div>
       <div className="container-fluid">
         <h4 className="best-seller">Check out mix & match</h4>
-        <div className="row">
+        <div className="row mx-md-5 mx-0">
       {products.map((item) => (
         <div key={item.id} className="col-md-4">
           <div className="cardthree-img">
@@ -515,9 +515,9 @@ export default function Home() {
             <span> New Season Essential</span>
           </div>
         </div>
-        <div className="faq-container">
+        {/* <div className="faq-container"> */}
           {/* FAQ List */}
-          <div className="faq-list">
+          {/* <div className="faq-list">
             <h6>Hot This Week</h6>
             <h4>
               Beautifully functional <br />
@@ -540,55 +540,15 @@ export default function Home() {
                 {index === activeIndex && <p>{faq.answer}</p>}
               </div>
             ))}
-          </div>
+          </div> */}
 
           {/* Side Image */}
-          <div className="faq-image">
+          {/* <div className="faq-image">
             <img src={faqData[activeIndex].img} alt="faq related" />
-          </div>
-        </div>
-        <div className="featured-sec">
-          <h4>Featured in Press</h4>
-          <div className="brand-all pb-4">
-            <div className="brand-feature">
-              <img
-                src="https://fashion.minimog.co/cdn/shop/files/logo-1.webp?v=1708485695"
-                alt=""
-              />
-            </div>
-            <div className="brand-feature">
-              <img
-                src="https://fashion.minimog.co/cdn/shop/files/logo-2.webp?v=1708485695"
-                alt=""
-              />
-            </div>
-            <div className="brand-feature">
-              <img
-                src="https://fashion.minimog.co/cdn/shop/files/logo-3.webp?v=1708485695"
-                alt=""
-              />
-            </div>
-            <div className="brand-feature">
-              <img
-                src="https://fashion.minimog.co/cdn/shop/files/logo-4.webp?v=1708485695"
-                alt=""
-              />
-            </div>
-            <div className="brand-feature">
-              <img
-                src="https://fashion.minimog.co/cdn/shop/files/logo-5.webp?v=1708485695"
-                alt=""
-              />
-            </div>
-            <div className="brand-feature">
-              <img
-                src="https://fashion.minimog.co/cdn/shop/files/logo-6.webp?v=1708485695"
-                alt=""
-              />
-            </div>
-          </div>
-        </div>
-        <hr />
+          </div> */}
+        {/* </div> */}
+       
+        {/* <hr /> */}
         <div className="edition-sec">
           <h3>The Coastal Edition</h3>
           <h6>
@@ -628,7 +588,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="edition-living">
+        {/* <div className="edition-living">
           <h3>
             Living out every single day and <br />
             be brave to show off your own true colors
@@ -641,7 +601,7 @@ export default function Home() {
           <div class="shop-all">
             <button>Shop Now</button>
           </div>
-        </div>
+        </div> */}
         <div className="top-products">
           {subCategories.map((item) => (
             <div  onClick={() => navigate(`/categorie/${item.slug}`)}
@@ -736,7 +696,7 @@ export default function Home() {
           </Swiper>
         </div>
       </section> */}
-      <section className="instagram-section container-fluid">
+      {/* <section className="instagram-section container-fluid">
         <h2>Follow us Instagram</h2>
         <p>
           Tag @minimog in your Instagram photos for a chance to be featured
@@ -776,7 +736,50 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
+      <section>
+       <div className="featured-sec">
+          <h4>Featured in Press</h4>
+          <div className="brand-all pb-4">
+            <div className="brand-feature">
+              <img
+                src="https://fashion.minimog.co/cdn/shop/files/logo-1.webp?v=1708485695"
+                alt=""
+              />
+            </div>
+            <div className="brand-feature">
+              <img
+                src="https://fashion.minimog.co/cdn/shop/files/logo-2.webp?v=1708485695"
+                alt=""
+              />
+            </div>
+            <div className="brand-feature">
+              <img
+                src="https://fashion.minimog.co/cdn/shop/files/logo-3.webp?v=1708485695"
+                alt=""
+              />
+            </div>
+            <div className="brand-feature">
+              <img
+                src="https://fashion.minimog.co/cdn/shop/files/logo-4.webp?v=1708485695"
+                alt=""
+              />
+            </div>
+            <div className="brand-feature">
+              <img
+                src="https://fashion.minimog.co/cdn/shop/files/logo-5.webp?v=1708485695"
+                alt=""
+              />
+            </div>
+            <div className="brand-feature">
+              <img
+                src="https://fashion.minimog.co/cdn/shop/files/logo-6.webp?v=1708485695"
+                alt=""
+              />
+            </div>
+          </div>
+        </div>
+        </section>
       <section className="container py-5">
         <div className="row text-center gy-4">
           <div className="col-6 col-md-3">

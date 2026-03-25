@@ -253,7 +253,7 @@ export default function AdminVendor() {
   const [verifiedIds, setVerifiedIds] = useState([]);
   // const { state } = useLocation();
   // const { customerId } = state || {};
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
  const navigate = useNavigate();
   // 🔹 Fetch Vendors
   const getVendors = async (query = "") => {

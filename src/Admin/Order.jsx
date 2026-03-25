@@ -12,7 +12,7 @@ export default function Order() {
 
   const [data, setData] = useState([]);
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   // Fetch Categories
 const handleSearch = (event) => {

@@ -8,7 +8,7 @@ import axios from "axios";
 
 export default function AddBanner() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   const [formData, setFormData] = useState({
     title: "",

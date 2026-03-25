@@ -4,7 +4,7 @@ import AdminHeader from "./AdminHeader";
 import AdminSidebar from "./AdminSidebar";
 
 export default function ProductAdd() {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   /* ================= BASIC ================= */
   const [name, setName] = useState("");

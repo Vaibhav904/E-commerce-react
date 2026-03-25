@@ -51,6 +51,7 @@ export default function MyOrder() {
   return (
     <div className="container mt-5">
       <h2 className="mb-4">My Orders</h2>
+      <div className="row">
 
       {orders.length === 0 ? (
         <div className="text-center">
@@ -59,12 +60,13 @@ export default function MyOrder() {
         </div>
       ) : (
         orders.map((order) => (
+          <div className="col-md-6">
           <div
             key={order.order_id}
             className="card mb-4 shadow-sm border-0"
             style={{ borderRadius: "10px" }}
           >
-            <div className="card-header bg-light d-flex justify-content-between">
+            <div className="card-header bg-light d-flex justify-content-between mb-0">
               <div>
                 <strong>Order ID:</strong> #{order.order_id}
               </div>
@@ -116,8 +118,11 @@ export default function MyOrder() {
               </div>
             </div>
           </div>
+          </div>
         ))
-      )}
+      )
+      }
+      </div>
     </div>
   );
 }
