@@ -5,16 +5,17 @@ import AdminSidebar from "./AdminSidebar";
 
 export default function VendorProfile() {
   const [errors, setErrors] = useState({});
+  const [bankDetails, setBankDetails] = useState(null);
 const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
 const [toastType, setToastType] = useState("success"); // success / danger
   const [Bank, setBank] = useState({
-accountHolder: '',
-accountNumber: '',
-ifscCode: '',
-bankName: '',
-  accountType: ""
+    accountHolder: '',
+    accountNumber: '',
+    ifscCode: '',
+    bankName: '',
+      accountType: ""
   })
 const validate = () => {
   let newErrors = {};
@@ -49,6 +50,8 @@ const validate = () => {
 
   useEffect(() => {
     fetchProfile();
+      fetchBankDetails(); // 👈 add this
+
   }, []);
   const handleChange = (e)=>{
     const {name , value}=e.target;
@@ -166,6 +169,22 @@ const handleSubmit = async (e) => {
   } finally {
     setLoading(false);
   }
+};
+
+
+const fetchBankDetails = () => {
+  axios
+    .get("http://tech-shop.techsaga.live/api/v1/vendor/bank-details", {
+      headers: {
+        Authorization: `Bearer ${vendorToken}`,
+      },
+    })
+    .then((res) => {
+      setBankDetails(res.data.data);
+    })
+    .catch((err) => {
+      console.error("Error fetching bank details:", err);
+    });
 };
 
   return (
@@ -336,79 +355,158 @@ const handleSubmit = async (e) => {
 
               {/* RIGHT SIDE - INFO CARD */}
             <div className="col-md-4">
-  <div
-    className="card border-0 rounded-4 p-4"
-    style={{
-      background: "#f8f9ff", // ✅ soft pastel
-      boxShadow: "0 8px 25px rgba(0,0,0,0.05)",
-    }}
-  >
-    {/* Profile Circle */}
-    <div className="text-center mb-3">
-      <div
-        className="mx-auto d-flex align-items-center justify-content-center"
-        style={{
-          width: "70px",
-          height: "70px",
-          borderRadius: "50%",
-          background: "#e0e7ff", // pastel circle
-          color: "#4f46e5",
-          fontSize: "26px",
-          fontWeight: "600",
-        }}
-      >
-        {profile.first_name?.charAt(0)}
-      </div>
-    </div>
+              <div
+                className="card border-0 rounded-4 p-4"
+                style={{
+                  background: "#f8f9ff", // ✅ soft pastel
+                  boxShadow: "0 8px 25px rgba(0,0,0,0.05)",
+                }}
+              >
+                {/* Profile Circle */}
+                <div className="text-center mb-3">
+                  <div
+                    className="mx-auto d-flex align-items-center justify-content-center"
+                    style={{
+                      width: "70px",
+                      height: "70px",
+                      borderRadius: "50%",
+                      background: "#e0e7ff", // pastel circle
+                      color: "#4f46e5",
+                      fontSize: "26px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {profile.first_name?.charAt(0)}
+                  </div>
+                </div>
 
-    {/* Seller Name */}
-    <div className="text-center mb-2">
-      <h5 className="fw-semibold mb-1" style={{ color: "#2d2d2d" }}>
-        {profile.name || "N/A"}
-      </h5>
-      <p className="text-muted mb-0" style={{ fontSize: "14px" }}>
-        Seller Account
-      </p>
-    </div>
+                {/* Seller Name */}
+                <div className="text-center mb-2">
+                  <h5 className="fw-semibold mb-1" style={{ color: "#2d2d2d" }}>
+                    {profile.name || "N/A"}
+                  </h5>
+                  <p className="text-muted mb-0" style={{ fontSize: "14px" }}>
+                    Seller Account
+                  </p>
+                </div>
 
-    {/* Business Name Badge */}
-    <div className="text-center my-3">
-      <span
-        style={{
-          background: "#eef2ff",
-          color: "#4f46e5",
-          padding: "6px 14px",
-          borderRadius: "20px",
-          fontSize: "13px",
-          fontWeight: "500",
-        }}
-      >
-        {profile.business_name || "No Business Name"}
-      </span>
-    </div>
+                {/* Business Name Badge */}
+                <div className="text-center my-3">
+                  <span
+                    style={{
+                      background: "#eef2ff",
+                      color: "#4f46e5",
+                      padding: "6px 14px",
+                      borderRadius: "20px",
+                      fontSize: "13px",
+                      fontWeight: "500",
+                    }}
+                  >
+                    {profile.business_name || "No Business Name"}
+                  </span>
+                </div>
 
+                <hr />
+
+                {/* Info */}
+                <div style={{ fontSize: "14px", color: "#555" }}>
+                  <div className="mb-2">
+                    <strong>Email:</strong>
+                    <div className="text-muted">{profile.email}</div>
+                  </div>
+
+                  <div className="mb-2">
+                    <strong>Phone:</strong>
+                    <div className="text-muted">{profile.phone_number}</div>
+                  </div>
+
+                  <div>
+                    <strong>GSTIN:</strong>
+                    <div className="text-muted">
+                      {profile.gstin_no || "Not Available"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                {bankDetails && (
+  <>
     <hr />
 
-    {/* Info */}
+    <h6 className="fw-semibold mb-3 text-primary">
+      Bank Details
+    </h6>
+
     <div style={{ fontSize: "14px", color: "#555" }}>
       <div className="mb-2">
-        <strong>Email:</strong>
-        <div className="text-muted">{profile.email}</div>
+        <strong>Account Holder:</strong>
+        <div className="text-muted">
+          {bankDetails.account_holder_name}
+        </div>
       </div>
 
       <div className="mb-2">
-        <strong>Phone:</strong>
-        <div className="text-muted">{profile.phone_number}</div>
+        <strong>Account Number:</strong>
+        <div className="text-muted">
+          ****{bankDetails.account_number.slice(-4)}
+        </div>
+      </div>
+
+      <div className="mb-2">
+        <strong>IFSC:</strong>
+        <div className="text-muted">
+          {bankDetails.ifsc_code}
+        </div>
+      </div>
+
+      <div className="mb-2">
+        <strong>Bank Name:</strong>
+        <div className="text-muted">
+          {bankDetails.bank_name}
+        </div>
+      </div>
+
+      <div className="mb-2">
+        <strong>Account Type:</strong>
+        <div className="text-muted text-capitalize">
+          {bankDetails.account_type}
+        </div>
+      </div>
+
+      <div className="mb-2">
+        <strong>Status:</strong>
+        <div
+          className={`badge ${
+            bankDetails.status === "active"
+              ? "bg-success"
+              : "bg-secondary"
+          }`}
+        >
+          {bankDetails.status}
+        </div>
       </div>
 
       <div>
-        <strong>GSTIN:</strong>
-        <div className="text-muted">
-          {profile.gstin_no || "Not Available"}
+        <strong>Verification:</strong>
+        <div
+          className={`badge ${
+            bankDetails.is_verified
+              ? "bg-success"
+              : "bg-warning text-dark"
+          }`}
+        >
+          {bankDetails.is_verified ? "Verified" : "Pending"}
         </div>
       </div>
     </div>
-  </div>
+  </>
+)}
+{!bankDetails && (
+  <p className="text-muted text-center mt-3">
+    No bank details added yet.
+  </p>
+)}
+              </div>
             </div>
             </div>
           )}

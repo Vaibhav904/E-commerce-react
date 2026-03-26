@@ -436,6 +436,7 @@ const handleTotalOrdersClick = (id)=>{
                     <th>Account Status</th>
                     <th>Total Products</th>
                     <th>Total Orders</th>
+                    <th>Details</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -487,6 +488,12 @@ const handleTotalOrdersClick = (id)=>{
                                   }  className="btn btn-link total_order">
                           {vendor.total_purchased}
                           </button>
+                          </td>
+                          <td>
+                            <div className="d-flex gap-2">
+                            <button className="btn_details">Vendor Details</button>
+                            <button className="bank_details">Bank Details</button>
+                          </div>
                           </td>
                       </tr>
                     ))

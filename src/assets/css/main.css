@@ -4824,3 +4824,22 @@ button.badge.bg-success {
     color: #7b7b7b;
     font-size: 29px;
 }
+.btn_details {
+    background-color: red;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    border-radius: 10px;
+    border: 0px;
+        padding: 4px 10px;
+}
+
+.bank_details{
+background-color: #edcea9;
+  font-size: 14px;
+    font-weight: 600;
+    color: white;
+    border-radius: 10px;
+    border: 0px;
+        padding: 4px 10px;
+}
