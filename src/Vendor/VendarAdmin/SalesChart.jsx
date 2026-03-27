@@ -267,7 +267,7 @@ useEffect(() => {
           </div>
         </div>
 
-        <div className="card stat-card">
+        {/* <div className="card stat-card">
           <div className="stat-info">
             <h3>TOTAL CUSTOMERS</h3>
             <p>{totalcustomer}</p>
@@ -287,7 +287,7 @@ useEffect(() => {
           <div className="stat-icon revenue">
             <FaChartLine />
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* CHARTS */}
