@@ -85,6 +85,7 @@ export default function BestSeller() {
       console.log("my details", detailRes);
 
       const variantId = detailRes.data.product?.variants?.[0]?.variant_id;
+      
       console.log("my variantId", variantId);
 
       const res = await axios.post(
@@ -448,32 +449,12 @@ export default function BestSeller() {
                       opacity: product?.stock_status === "outofstock" ? 0.6 : 1,
                     }}
                   >
-                    <img
+                    <div className="img-container">
+                        <img
                       src={product.images?.[product.images?.length - 1]}
                       alt={product.title}
                     />
-
-                    <h4>{product.title}</h4>
-
-                    <p>
-                      ₹{product.Salesprice}
-                      <del className="ps-2 text-muted">₹{product.price}</del>
-                    </p>
-
-                    <span className="discount">
-                      {product.discountPercentage}% OFF
-                    </span>
-
-                    {product?.stock_status === "outofstock" && (
-                      <p className="text-danger fw-bold">Out of Stock</p>
-                    )}
-
-                    {/* <p className="text-danger fw-bold">{product.stock_status}</p>
-    {product.stock_status === "Out of Stock" && (
-  <p className="text-danger fw-bold">Out of Stock</p>
-)} */}
-
-                    <div className="btn-selectwish">
+                         <div className="btn-selectwish">
                       <div className="whislist-icon">
                         <button>
                           <CiHeart
@@ -512,6 +493,30 @@ export default function BestSeller() {
                         </button>
                       </div>
                     </div>
+                    </div>
+                  
+
+                    <h4>{product.title}</h4>
+
+                    <p>
+                      ₹{product.Salesprice}
+                      <del className="ps-2 text-muted">₹{product.price}</del>
+                    </p>
+
+                    <span className="discount">
+                      {product.discountPercentage}% OFF
+                    </span>
+
+                    {product?.stock_status === "outofstock" && (
+                      <p className="text-danger fw-bold">Out of Stock</p>
+                    )}
+
+                    {/* <p className="text-danger fw-bold">{product.stock_status}</p>
+    {product.stock_status === "Out of Stock" && (
+  <p className="text-danger fw-bold">Out of Stock</p>
+)} */}
+
+                 
                   </div>
                 </div>
               ))

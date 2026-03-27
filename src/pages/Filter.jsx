@@ -145,7 +145,7 @@ function Filter({ showStock }) {
         Clear Filters
       </button>
 
-      <Accordion defaultActiveKey={["0", "1", "2"]} alwaysOpen>
+      <Accordion defaultActiveKey={["0", "1", "2", "cat"]} alwaysOpen>
         {/* ================= Availability ================= */}
 
         <Accordion.Item eventKey="0">
@@ -223,7 +223,7 @@ function Filter({ showStock }) {
 
         {/* ================= CATEGORY ================= */}
 
-        <Accordion.Item eventKey="cat" className="py-4">
+        <Accordion.Item eventKey="cat" >
           <Accordion.Header>Category</Accordion.Header>
 
           <Accordion.Body>

@@ -10,7 +10,6 @@ export default function Categorie() {
 
   return (
     <div className="headerbt">
-        <div className="container-fluid px-5">
         <div className="banner-crumb">
             <img src="https://fashion.minimog.co/cdn/shop/files/collection-banner-section.jpg?v=1709194155&width=2000" alt="" />
             <div className="categorie-banner">
@@ -29,6 +28,8 @@ export default function Categorie() {
 with a variation of styles and fits that are both feminine and relaxed.</p>
 </div>
         </div>
+        <div className="container-fluid px-5">
+      
       <div className="categoury-fields">
          <div className='first-fil'><Filter showStock={showStock} /> </div>
          <div className='second-fil'><Featured stockUpdate={stockUpdate} /></div>

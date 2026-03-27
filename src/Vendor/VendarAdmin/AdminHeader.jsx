@@ -2,10 +2,12 @@ import { useState, useContext, useEffect } from "react";
 import { FaBell } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../Context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faStore } from "@fortawesome/free-solid-svg-icons";
+import { FaRightFromBracket } from "react-icons/fa6";
+import { FaUsers} from "react-icons/fa";
 import axios from "axios";
 
 const AdminHeader = () => {
@@ -83,11 +85,13 @@ const [vendorName, setVendorName] = useState(""); // dynamic seller name
                 width: "140px",
               }}
             >
-              {/* <div style={itemStyle} onClick={() => alert("Open Profile")}>
-                Profile
-              </div> */}
+              <div className="bg-Link_setting" style={itemStyle} >
+                <Link to="/vendor/vendor-profile">
+                  <FaUsers /> Profile
+                </Link>
+              </div>
               <div style={itemStyle} onClick={vendorHandleLogout}>
-                Logout
+                <FaRightFromBracket /> Logout
               </div>
             </div>
           )}

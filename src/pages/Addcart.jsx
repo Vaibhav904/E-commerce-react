@@ -164,7 +164,7 @@ export default function Addcart({ open, close }) {
   // ======================
   const updateCartQuantity = async (item, newQty) => {
     if (newQty < 1) return;
-
+  if (newQty > item.stock) return;
     try {
       const formData = new FormData();
       const cartId = item.cart_id || item.id;
@@ -204,15 +204,20 @@ export default function Addcart({ open, close }) {
   };
 
   const handleIncrease = (item) => {
+    if (item.quantity >= item.stock) return; // ✅ stock limit
     const updatedItem = { ...item, quantity: 1 }; // Set quantity to 1
     // console.log("updatedItem with quantity 1:", updatedItem);
     dispatch(addToCart(updatedItem)); // Dispatch updatedItem with quantity 1
   };
 
-  const handleDecrease = (id) => {
-    console.log("id", id);
-    dispatch(decreaseQty(id));
-  };
+  // const handleDecrease = (id) => {
+  //   console.log("id", id);
+  //   dispatch(decreaseQty(id));
+  // };
+  const handleDecrease = (id, quantity) => {
+  if (quantity <= 1) return; // ✅ minimum limit
+  dispatch(decreaseQty(id));
+};
 
   return (
     <>
@@ -282,6 +287,7 @@ export default function Addcart({ open, close }) {
 
                 <div className="flex-grow-1">
                   <strong>{item.title}</strong>
+                  <strong>{item.stock}</strong>
                   <h5 className="mt-1 cart-price">₹{item.price}</h5>
 
                   <div className="quantity-control mt-2 d-flex align-items-center gap-2">
@@ -329,6 +335,9 @@ export default function Addcart({ open, close }) {
                   </button>
                 </div>
               </div>
+                              {item.quantity === item.stock && (
+  <p className="text-warning">Max stock reached</p>
+)}
             </div>
           ))}
 

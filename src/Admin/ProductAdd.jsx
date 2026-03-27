@@ -243,6 +243,7 @@ const addVariant = () => {
         <div className="container-fluid mt-4">
           <form onSubmit={handleSubmit} className="p-4 bg-white shadow rounded card">
             {/* PRODUCT NAME */}
+            <label className="form-label">Product Name</label>
             <input
               className="form-control mb-3"
               placeholder="Product Name"
@@ -250,6 +251,7 @@ const addVariant = () => {
             />
 
             {/* CATEGORY */}
+            <label className="form-label">Parent Category</label>
             <select
               className="form-control mb-3"
               onChange={(e) => {
@@ -264,7 +266,7 @@ const addVariant = () => {
                 </option>
               ))}
             </select>
-
+            <label className="form-label">Child Category</label>
             <select
               className="form-control mb-3"
               disabled={!parentCategory}
@@ -279,6 +281,7 @@ const addVariant = () => {
             </select>
 
             {/* DESCRIPTION */}
+            <label className="form-label">Description</label>
             <textarea
               className="form-control mb-3"
               placeholder="Description"
@@ -301,6 +304,7 @@ const addVariant = () => {
             {/* VARIANTS */}
             {variants.map((v, i) => (
               <div key={i} className="border p-3 mb-3">
+                            <label className="form-label">SKU</label>
                 <input
                   className="form-control mb-2"
                   placeholder="SKU"
@@ -308,7 +312,7 @@ const addVariant = () => {
                     handleVariantChange(i, "sku", e.target.value)
                   }
                 />
-
+             <label className="form-label">Price</label>
                 <input
                   className="form-control mb-2"
                   placeholder="Base Price"
@@ -316,7 +320,7 @@ const addVariant = () => {
                     handleVariantChange(i, "base_price", e.target.value)
                   }
                 />
-
+            <label className="form-label">Discount</label>
                 <input
                   className="form-control mb-2"
                   placeholder="Discount"
@@ -324,6 +328,7 @@ const addVariant = () => {
                     handleVariantChange(i, "discount", e.target.value)
                   }
                 />
+            <label className="form-label">Stock</label>
 
                 <input
                   className="form-control mb-2"

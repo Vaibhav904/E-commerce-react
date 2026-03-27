@@ -1,11 +1,13 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../Context/AuthContext";
 import { FaBell } from "react-icons/fa6";
+import { FaRightFromBracket } from "react-icons/fa6";
 import { CiSearch } from "react-icons/ci";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faStore } from "@fortawesome/free-solid-svg-icons";
+import { FaChartLine } from "react-icons/fa";
 const AdminHeader = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -74,8 +76,12 @@ window.location.href = "/admin";
               {/* <div style={itemStyle} onClick={() => alert("Open Profile")}>
                 Profile
               </div> */}
+              <div className="bg-Link_setting" style={itemStyle}>
+                <Link to="/Updatepassword"><FaChartLine /> Setting</Link>    
+                {/* { id: "Updatepassword", icon: <FaChartLine />, label: "Setting",  path: "/Updatepassword" }, */}
+              </div>
               <div style={itemStyle} onClick={handleLogout}>
-                Logout
+              <FaRightFromBracket />  Logout
               </div>
             </div>
           )}

@@ -5,8 +5,7 @@ import Featured from './Featured'
 export default function Shop() {
   return (
     <div className="headerbt">
-        <div className="container-fluid px-5">
-        <div className="banner-crumb">
+              <div className="banner-crumb">
             <img src="https://fashion.minimog.co/cdn/shop/files/collection-banner-section.jpg?v=1709194155&width=2000" alt="" />
             <div className="categorie-banner">
       <nav aria-label="breadcrumb">
@@ -24,6 +23,8 @@ export default function Shop() {
 with a variation of styles and fits that are both feminine and relaxed.</p>
 </div>
         </div>
+        <div className="container-fluid px-5">
+
       <div className="categoury-fields">
          <div className='first-fil'><Filter/> </div>
          <div className='second-fil'><Featured/></div>

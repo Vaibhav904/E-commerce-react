@@ -47,12 +47,12 @@ const AdminSidebar = () => {
       label: "Vendor-Earnings",
       path: "/vendor/vendor-earnings",
     },
-    {
-      id: "VendorProfile",
-      icon: <FaUser />,
-      label: "Profile",
-      path: "/vendor/vendor-profile",
-    },
+    // {
+    //   id: "VendorProfile",
+    //   icon: <FaUser />,
+    //   label: "Profile",
+    //   path: "/vendor/vendor-profile",
+    // },
     // { id: "settings", icon: <FaCog />, label: "Settings", path: "/settings" },
   ];
 

@@ -27,7 +27,7 @@ const AdminSidebar = () => {
     { id: "vendorlisting", icon: <FaStore />, label: "Vendor-Listing",  path: "/vendorlisting" },
     { id: "vendorpayment", icon: <FaChartLine />, label: "Vendor-Payment",  path: "/vendorpayment" },
     
-    { id: "Updatepassword", icon: <FaChartLine />, label: "Setting",  path: "/Updatepassword" },
+    // { id: "Updatepassword", icon: <FaChartLine />, label: "Setting",  path: "/Updatepassword" },
 
     // { id: "settings", icon: <FaCog />, label: "Settings", path: "/settings" },
   ];

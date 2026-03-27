@@ -57,7 +57,7 @@ export default function About() {
 
   return (
     <div className="headerbt">
-       <section className="hero-section">
+      <section className="hero-section">
         <div className="container">
           <h1 className="hero-title">Our Story</h1>
           <p className="hero-subtitle">

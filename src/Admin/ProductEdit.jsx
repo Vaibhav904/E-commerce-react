@@ -982,13 +982,14 @@ export default function ProductEdit() {
           <h2>Edit Product</h2>
 
           <form onSubmit={handleSubmit} className="bg-white p-4 shadow rounded card mb-4">
+                        <label className="form-label">Product Name</label>
             <input
               className="form-control mb-3"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Product Name"
             />
-
+            <label className="form-label">Parent Category</label>
             <select
               className="form-control mb-3"
               value={parentCategory}
@@ -997,7 +998,7 @@ export default function ProductEdit() {
               <option value={0}>Parent Category</option>
               {parentCategories.map((c) => <option key={c.id} value={c.id}>{c.category_name}</option>)}
             </select>
-
+            <label className="form-label">Child Category</label>
             <select
               className="form-control mb-3"
               value={childCategory}
@@ -1007,7 +1008,7 @@ export default function ProductEdit() {
               <option value={0}>Child Category</option>
               {childCategories.map((c) => <option key={c.id} value={c.id}>{c.category_name}</option>)}
             </select>
-
+        <label className="form-label">Description</label>
             <textarea
               className="form-control mb-3"
               value={description}
@@ -1017,13 +1018,14 @@ export default function ProductEdit() {
 
             {variants.map((v, i) => (
               <div key={i} className="border p-3 mb-3 rounded">
+                <label className="form-label">SKU</label>
                 <input
                   className="form-control mb-2"
                   value={v.sku}
                   onChange={(e) => handleVariantChange(i, "sku", e.target.value)}
                   placeholder="SKU"
                 />
-
+                <label className="form-label">Size</label>
                 <Form.Select
                   value={v.attr.size}
                   onChange={(e) => handleAttrChange(i, "size", e.target.value)}
@@ -1036,7 +1038,10 @@ export default function ProductEdit() {
                 </Form.Select>
 
                 {v.attr.color.map((colorValue, colorIndex) => (
+                  <>
+                  <label className="form-label">Color</label>
                   <div key={colorIndex} className="d-flex mb-2 gap-2">
+                   
                     <Form.Select
                       value={colorValue}
                       onChange={(e) => handleColorChange(i, colorIndex, e.target.value)}
@@ -1057,6 +1062,7 @@ export default function ProductEdit() {
                       </button>
                     )}
                   </div>
+                  </>
                 ))}
 
                 <button

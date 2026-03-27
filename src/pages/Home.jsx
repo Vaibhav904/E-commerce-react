@@ -617,7 +617,7 @@ export default function Home() {
               <div id="container" aria-label="Before and after image slider">
                 <div className="img-wrapper">
                   <img
-                    src="https://raw.githubusercontent.com/ThomasEgMatthiesen/ThomasEgMatthiesen/refs/heads/main/hosted-assets/before.png"
+                    src="https://fashion.minimog.co/cdn/shop/files/before-image-min.jpg?v=1709267200&width=1500"
                     alt="Before"
                   />
                 </div>
@@ -626,7 +626,7 @@ export default function Home() {
                   style={{ clipPath: `inset(0px 0px 0px ${value}%)` }}
                 >
                   <img
-                    src="https://raw.githubusercontent.com/ThomasEgMatthiesen/ThomasEgMatthiesen/refs/heads/main/hosted-assets/after.png"
+                    src="https://fashion.minimog.co/cdn/shop/files/after-image-min.jpg?v=1709267217&width=1500"
                     alt="After"
                   />
                 </div>
@@ -737,7 +737,7 @@ export default function Home() {
           ))}
         </div>
       </section> */}
-      <section>
+      {/* <section>
        <div className="featured-sec">
           <h4>Featured in Press</h4>
           <div className="brand-all pb-4">
@@ -779,7 +779,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        </section>
+        </section> */}
       <section className="container py-5">
         <div className="row text-center gy-4">
           <div className="col-6 col-md-3">

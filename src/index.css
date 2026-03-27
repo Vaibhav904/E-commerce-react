@@ -2,11 +2,41 @@ body {
   margin: 0;
  font-family: "Poppins", sans-serif !important;
 }
-*{
-   font-family: "Poppins", sans-serif !important;
+
+@font-face{
+      font-family: M-Body-Font;
+      src: url(assets/fontfamily/Jost-Regular.ttf);
 
 }
 
+*{
+     font-family: "M-Body-Font", sans-serif !important;
+
+}
+h1,h2,h3,h5{
+        /* font-family: "M-Heading-Font", sans-serif !important; */
+}
+.categoury-shop h3{
+   font-family: "M-Body-Font", sans-serif !important;
+}
+.sub-headingtext h4{
+     font-family: "M-Body-Font", sans-serif !important;
+}
+.new-collection-arrow h4{
+      font-family: "M-Body-Font", sans-serif !important;
+    font-size: 19px;
+    font-weight: 500;
+}
+.best-seller{
+   font-family: "M-Body-Font", sans-serif !important;
+}
+.edition-sec h3{
+     font-family: "M-Body-Font", sans-serif !important;
+}
+.featured-sec h4{
+  
+     font-family: "M-Body-Font", sans-serif !important;
+}
 /* code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

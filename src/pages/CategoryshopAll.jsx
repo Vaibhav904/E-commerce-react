@@ -89,9 +89,7 @@ export default function CategoryshopAlls() {
   /* ================= JSX ================= */
   return (
     <div className="headerbt">
-      <div className="container-fluid px-5">
-
-        {/* BANNER */}
+              {/* BANNER */}
         <div className="banner-crumb">
           <img
             src="https://fashion.minimog.co/cdn/shop/files/collection-banner-section.jpg?v=1709194155&width=2000"
@@ -102,7 +100,7 @@ export default function CategoryshopAlls() {
             <p>Explore all products in this category</p>
           </div>
         </div>
-
+      <div className="container-fluid px-5">
         <div className="categoury-fields">
           {/* FILTER */}
           <div className="first-fil">

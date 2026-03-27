@@ -166,9 +166,9 @@ const [productCategories, setProductCategories] = useState([]);
               <li className="nav-item dropdown">
                 <NavLink to="/page">Page ▾</NavLink>
                 <ul className="dropdown-menu">
-                  {/* <li>
+                   {/* <li>
                     <Link to="/contact">Contact</Link>
-                  </li> */}
+                  </li>  */}
                   <li>
                     <Link to="/about">About</Link>
                   </li>
